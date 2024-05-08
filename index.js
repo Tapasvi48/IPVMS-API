@@ -43,7 +43,6 @@ app.use("/api/globalsearch", searchRouter);
 app.use("/api/versioncontrol", versionControlRouter);
 app.get("/documents/count/category", getDocumentCategories);
 
-
 app.use(exceptionHandler);
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
