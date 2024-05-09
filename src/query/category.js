@@ -78,26 +78,27 @@ export const updateCategory = async (data) => {
 };
 
 
-export const getDocumentCategories = async ()=>{
+export const getDocumentCategories = async () => {
     try {
         const dbResponse = await pool.query(
-            `
-            SELECT c.category, c.color, c.svg, COUNT(d.id) AS total_documents
+            `SELECT c.id, c.category, c.color, c.svg, COUNT(d.id) AS total_documents
             FROM category c
             LEFT JOIN document d ON c.id = d.category_id
-            GROUP BY c.category,c.color,c.svg UNION
-
-            SELECT 
-                'Total',NULL,NULL,
-                COUNT(*) AS total_documents
-            FROM 
-                document;
+            GROUP BY c.id, c.category,c.color,c.svg UNION
+      
+      SELECT 
+          NULL,'Total',NULL,NULL,
+          COUNT(*) AS total_documents
+      FROM 
+          document
+          
+          Order BY total_documents DESC;
             `
-            );
-    
+        );
+
         return dbResponse;
-        
+
     } catch (error) {
-        throw new DatabaseError()
+        throw new DatabaseError();
     }
-}
+};

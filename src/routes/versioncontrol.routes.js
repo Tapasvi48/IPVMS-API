@@ -3,6 +3,7 @@ import {
   createDocumentVersion,
   getDocumentVersionsById,
   getDocumentVersionsDatewise,
+  getVersions
 } from "../controllers/document/document.controller.js";
 import {
   createTemplateVersion,
@@ -22,4 +23,5 @@ versionControlRouter.get("/getTemplateVersionsDatewise", getTemplateVersionsDate
 versionControlRouter.get("/getTemplateVersionsById", getTemplateVersionsById);
 
 
+versionControlRouter.get("/getVersions", getVersions);
 export default versionControlRouter;

@@ -106,34 +106,44 @@ export const getdocument = async (req, res) => {
   const orderByDirection = query?.orderByDirection?.toUpperCase() || "ASC";
   try {
     const query = `
-WITH paginated_data AS (
+    WITH paginated_data AS (
+      SELECT 
+          id, 
+          category_id as cid,
+          created_at, 
+          created_by, 
+          title
+      FROM document d
+      WHERE 
+      title ILIKE '%'||$3||'%'
+      ORDER BY ${orderByColumn} ${orderByDirection}
+  ),
+  filtered_data AS (
+      SELECT 
+          pd.*, 
+          c.category as category_name, 
+          ut.first_name
+      FROM 
+          paginated_data pd
+      JOIN 
+          user_table ut ON pd.created_by = ut.id
+      JOIN  
+          category c ON c.id=pd.cid
+      WHERE 
+          c.category ILIKE '%'||$4||'%'
+  ),
+  total_count AS (
+      SELECT 
+          COUNT(*) as total_count 
+      FROM 
+          filtered_data
+  )
   SELECT 
-    id, 
-    category_id as cid,
-    htmljson, 
-    convert_from(htmldata, 'utf8') as data,  
-    created_at, 
-    created_by, 
-    title
-  FROM document d
-  WHERE 
-  title ILIKE '%'||$3||'%'
-  ORDER BY ${orderByColumn} ${orderByDirection}
-  LIMIT $1 OFFSET $2
-),
-total_count AS (
-  SELECT COUNT(*) as total_count FROM document
-)
-SELECT 
-  pd.*, 
-  (SELECT total_count FROM total_count) as total_count,
-  c.category as category_name
-FROM 
-paginated_data pd
-JOIN  category c 
-ON c.id=pd.cid
-WHERE 
-  c.category ILIKE '%'||$4||'%';
+      fd.*, 
+      (SELECT total_count FROM total_count) as total_count
+  FROM 
+      filtered_data fd
+  LIMIT $1 OFFSET $2;
 `;
 
     const data = await pool.query(query, [limit, offset, title, category]);
