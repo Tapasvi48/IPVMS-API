@@ -21,11 +21,6 @@ const __dirname = path.resolve();
 
 dotenv.config({ path: path.resolve(__dirname, "./.env") });
 
-const limiter = rateLimit({
-  windowMs: 1 * 60 * 60,
-  max: 10,
-});
-
 const app = express();
 
 app.use(bodyParser.json({ limit: "50mb" }));
@@ -33,7 +28,7 @@ app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
 app.use(cors());
 app.use(compression());
-app.use(limiter);
+
 app.use("/documentation", swaggerUi.serve, swaggerUi.setup(apiDocumentation));
 app.use("/api/user", userRouter);
 app.use("/api/categories", categoryRouter);
