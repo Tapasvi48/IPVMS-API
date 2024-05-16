@@ -33,7 +33,12 @@ fileRouter.post("/createPolicy", authorizationMiddeleware, createPolicy);
 fileRouter.post("/setPolicyDetail", setPolicyDetail);
 fileRouter.get("/getFile/:docId", getFile);
 fileRouter.get("/getLetters", getLetters);
-fileRouter.post("/uploadTemplate", uploadTemplateMiddleware, uploadTemplate);
+fileRouter.post(
+  "/uploadTemplate",
+  authorizationMiddeleware,
+  uploadTemplateMiddleware,
+  uploadTemplate
+);
 fileRouter.get("/getTemplateById/:id", getTemplateById);
 fileRouter.post("/updateDocument/:id", editDocument);
 // fileRouter.post("/saveAsPdf", saveAsPdf);

@@ -153,28 +153,6 @@ WHERE
   }
 };
 
-export const uploadTemplate = async (req, res) => {
-  let { name, description, categoryId, htmlText } = req.body;
-
-  try {
-    const htmlData = Buffer.from(htmlText, "utf8");
-
-    await fileService.uploadTemplateService(
-      res,
-      name,
-      description,
-      categoryId,
-      htmlData
-    );
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-      error: error.message,
-    });
-  }
-};
-
 export const getTemplateById = async (req, res) => {
   const id = req.params.id;
   if (!id) {
@@ -486,6 +464,32 @@ paginated_data pd;
   }
 };
 
+export const uploadTemplate = async (req, res) => {
+  let { name, description, categoryId, htmlText, htmlJson } = req.body;
+  const userid = req.user.id;
+  console.log(req.user.id, "dev");
+  console.log(name, description, categoryId, htmlText, "DEV");
+
+  try {
+    const htmlData = Buffer.from(htmlText, "utf8");
+
+    await fileService.uploadTemplateService(
+      res,
+      name,
+      description,
+      categoryId,
+      htmlData,
+      htmlJson,
+      userid
+    );
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
 export const createPolicy = async (req, res, next) => {
   const userid = req.user.id;
   console.log(req.user);

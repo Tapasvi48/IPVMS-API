@@ -52,7 +52,9 @@ export const uploadTemplateService = async (
   name,
   description,
   categoryId,
-  htmlData
+  htmlData,
+  htmlJson,
+  userid
 ) => {
   try {
     const result = await uploadTemplate({
@@ -60,6 +62,8 @@ export const uploadTemplateService = async (
       description,
       categoryId,
       htmlData,
+      htmlJson,
+      userid,
     });
 
     if (!result) {

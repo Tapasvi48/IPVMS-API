@@ -29,11 +29,15 @@ export const getDocumentById = async (data) => {
 };
 
 export const uploadTemplate = async (data) => {
-  const { name, description, categoryId, htmlData } = data;
+  let { htmlData, htmlJson, categoryId, name, userid } = data;
+
+  console.log(name, "sss");
+  console.log("hit");
+
   try {
     const result = await pool.query(
-      "INSERT INTO template (title,description,category_id,htmldata) VALUES($1,$2,$3,$4) RETURNING *",
-      [name, description, categoryId, htmlData]
+      "INSERT INTO  template   (htmldata,category_id,title,htmljson,created_by) VALUES($1,$2,$3,$4,$5) RETURNING *",
+      [htmlData, categoryId, name, htmlJson, userid]
     );
     return result;
   } catch (error) {
