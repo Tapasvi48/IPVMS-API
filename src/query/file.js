@@ -54,8 +54,11 @@ export const getTemplate = async (data) => {
   }
 };
 
-export const getPaginatedDocumentDetailsWithSearch = async (data, orderByColumn, orderByDirection) => {
-
+export const getPaginatedDocumentDetailsWithSearch = async (
+  data,
+  orderByColumn,
+  orderByDirection
+) => {
   const query = {
     text: `
     WITH paginated_data AS (
@@ -105,8 +108,7 @@ export const getPaginatedDocumentDetailsWithSearch = async (data, orderByColumn,
     const dbResponse = await pool.query(query);
     // console.log(dbResponse);
     return dbResponse;
-
   } catch (error) {
-    throw new DatabaseError('Error while getting documents details.');
+    throw new DatabaseError("Error while getting documents details.");
   }
 };

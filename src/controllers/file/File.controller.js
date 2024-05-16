@@ -490,7 +490,7 @@ export const createPolicy = async (req, res, next) => {
   const userid = req.user.id;
   console.log(req.user);
   let { htmlText, htmlJson, categoryId, title } = req.body;
-
+  console.log(htmlText);
   const textBytesSize = Buffer.byteLength(htmlText, "utf8");
   // middleware
   if (textBytesSize > 10 * 1024 * 1024) {
@@ -550,30 +550,31 @@ export const setPolicyDetail = async (req, res, next) => {
 
 export const getLetters = async (req, res) => {
   const query = req.query;
-  const name = req.query.name;
-  const template = req.query.template;
+  const name = req.query.name || "";
+  const template = req.query.template || "";
   //  /document?page=1&size=2
   const page = parseInt(query.page);
   const size = parseInt(query.size);
   const { limit, offset } = getPagination(page, size);
   console.log("page", limit, offset);
-  console.log(name.toString(), template.toString());
+  console.log(name.toString(), template.toString(), "SADA");
   //order by
 
   try {
     const query = `
 WITH paginated_data AS (
   SELECT 
-    id, 
-    template_id as tid,
-    filepath,   
-    created_at, 
-    created_by, 
-    employee_name
-  FROM letters l
-  WHERE 
-  employee_name ILIKE '%'||$3||'%'
-),
+    l.id, 
+    l.template_id as tid,
+    l.filepath,   
+    l.created_at, 
+    l.created_by, 
+    CONCAT(us.first_name,us.last_name) as employee_name
+    FROM letters l
+    JOIN user_table AS us 
+    ON us.id=l.userid
+    WHERE CONCAT(us.first_name, us.last_name) ILIKE '%'||$3||'%'
+  ),
 total_count AS (
   SELECT COUNT(*) as total_count FROM letters
 )
@@ -602,6 +603,7 @@ WHERE
       .status(200)
       .json({ message: "documents are", success: true, data: data.rows });
   } catch (error) {
+    console.log(error.message);
     return res
       .status(500)
       .json({ message: "Internal server error", error: error, success: false });
