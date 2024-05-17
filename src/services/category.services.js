@@ -6,15 +6,20 @@ import {
     NotFoundError,
     ValidationError,
 } from "../Error/customError.js";
-
+import { randomHexColor } from "random-hex-color-generator";
+import { dummy_svg } from "../utils/dummy/categorysvg.js";
 
 export const createNewCategoryService = async (body) => {
     const { category } = body;
     try {
 
+        const color = randomHexColor();
+
+        const svg = dummy_svg[Math.floor(Math.random() * 9)];
+        // console.log(color, svg);
         const isActive = true;
         const createdCategoryResult = await createCategory({
-            category, isActive
+            category, isActive, color, svg
         });
 
         const data = {
