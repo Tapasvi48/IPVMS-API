@@ -4,6 +4,7 @@ import * as fileService from "../../services/file.services.js";
 import path from "path";
 import { sendLetterEmail } from "../../core/Email/sendEmail.js";
 import { getPagination } from "../../utils/getPagination.js";
+import { NotFoundError } from "../../Error/customError.js";
 
 const __dirname = path.resolve();
 export const uploadFile = async (req, res) => {
@@ -548,10 +549,13 @@ export const setPolicyDetail = async (req, res, next) => {
   }
 };
 
-export const getLetters = async (req, res) => {
+export const getLetters = async (req, res, next) => {
   const query = req.query;
   const name = req.query.name || "";
   const template = req.query.template || "";
+  const status = req.query.status || "";
+  console.log(status);
+
   //  /document?page=1&size=2
   const page = parseInt(query.page);
   const size = parseInt(query.size);
@@ -573,10 +577,11 @@ WITH paginated_data AS (
     FROM letters l
     JOIN user_table AS us 
     ON us.id=l.userid
-    WHERE CONCAT(us.first_name, us.last_name) ILIKE '%'||$3||'%'
+    WHERE CONCAT(us.first_name, us.last_name) ILIKE '%'||$3||'%' and l.status=$5
+
   ),
 total_count AS (
-  SELECT COUNT(*) as total_count FROM letters
+  SELECT COUNT(*) as total_count FROM letters 
 )
 SELECT 
   pd.*, 
@@ -590,22 +595,46 @@ ON t.category_id=c.id
 ON t.id=pd.tid
 WHERE 
   t.title ILIKE '%'||$4||'%'
+
+
   LIMIT $1 OFFSET $2  
 `;
-    const data = await pool.query(query, [limit, offset, name, template]);
+    const data = await pool.query(query, [
+      limit,
+      offset,
+      name,
+      template,
+      status.toString(),
+    ]);
+    console.log();
     if (data.rows.length === 0) {
-      return res
-        .status(404)
-        .json({ success: false, message: "no document dound" });
+      throw new NotFoundError("no document found");
     }
     console.log(data.rows.length);
     return res
       .status(200)
       .json({ message: "documents are", success: true, data: data.rows });
   } catch (error) {
-    console.log(error.message);
+    next(error);
+  }
+};
+export const getLetterById = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const data = await pool.query(
+      "SELECT convert_from(html_data,'utf8') as html_data FROM letters where id=$1",
+      [id]
+    );
+    console.log(data.rows[0]);
+
+    if (data.rows.length === 0) {
+      throw new NotFoundError("no document found");
+    }
+    console.log(data.rows.length);
     return res
-      .status(500)
-      .json({ message: "Internal server error", error: error, success: false });
+      .status(200)
+      .json({ message: "documents are", success: true, data: data.rows[0] });
+  } catch (error) {
+    next(error);
   }
 };
