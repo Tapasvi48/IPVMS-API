@@ -63,18 +63,27 @@ app.get("/getversions/datewise", async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT 
-      DATE(dv.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'IST') AS date,
-      STRING_AGG('[' || dv.id::text || ',' || dv.version_number || ',' || dv.doc_id ||  ','|| (dv.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'IST') || ','|| u.first_name || ']', ', ') AS grouped_values
-  FROM 
-      document_version dv
-  JOIN 
-      user_table u ON dv.created_by = u.id
-  WHERE 
-      dv.doc_id =$1
+      datew,
+      STRING_AGG(grouped_value, ', ') AS grouped_values
+  FROM (
+      SELECT 
+          dv.created_at,
+          DATE(dv.created_at) as datew,
+          '[' || dv.id::text || ',' || dv.version_number || ',' || dv.doc_id ||  ',' || dv.created_at || ',' || u.first_name || ']' AS grouped_value
+      FROM 
+          document_version dv
+      JOIN 
+          user_table u ON dv.created_by = u.id
+      WHERE 
+          dv.doc_id = $1
+      ORDER BY 
+          dv.created_at DESC
+  ) subquery
   GROUP BY 
-      DATE(dv.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'IST')
+      datew
   ORDER BY 
-      date DESC;
+      datew DESC;
+  
   `,
       [docId]
     );
