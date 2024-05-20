@@ -9,10 +9,11 @@ import {
 
 
 export const createCategory = async (data) => {
-    const { category, isActive } = data;
+    const { category, isActive, color, svg } = data;
+    console.log(category, isActive, color, svg);
     const query = {
-        text: "INSERT INTO category(category,is_active) VALUES($1,$2) RETURNING *",
-        values: [category, isActive],
+        text: "INSERT INTO category(category,is_active, color, svg) VALUES($1,$2, $3, $4) RETURNING *",
+        values: [category, isActive, color, svg],
     };
 
     try {
