@@ -80,3 +80,22 @@ export const getUrl = async (req, res, next) => {
     next(error);
   }
 };
+
+export const saveLetter = async (req, res, next) => {
+  console.log("hit upload");
+
+  try {
+    const { userId, templateId, html_data } = req.body;
+    console.log(html_data);
+    const htmlData1 = Buffer.from(html_data, "utf8");
+    const result = pool.query(
+      "INSERT INTO letters (template_id,userid,html_data) VALUES($1,$2,$3)",
+      [templateId, userId, htmlData1]
+    );
+    return res
+      .status(201)
+      .json({ message: "Letter added successfully", success: true });
+  } catch (error) {
+    next(error);
+  }
+};

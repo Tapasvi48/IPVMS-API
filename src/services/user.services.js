@@ -179,6 +179,7 @@ export const resetPasswordAuth = async (password, userId) => {
 export const sendInvite = async (body) => {
   try {
     const { name, email } = body;
+    console.log("hit ");
     //middleware check name and email null?
     console.log(email, name);
     if (!email || !name) {

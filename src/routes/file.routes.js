@@ -14,6 +14,7 @@ import {
   getAllTemplates,
   getLetters,
   getAllTemplatesByStatus,
+  getLetterById,
 } from "../controllers/file/File.controller.js";
 
 import {
@@ -25,7 +26,11 @@ import { getPaginatedDocumentDetailsWithSearch } from "../controllers/document/d
 import { authorizationMiddeleware } from "../middleware/authMiddleware/authMiddleware.js";
 import { upload } from "../middleware/miniobucketMiddleware.js";
 import { minioClient } from "../utils/minioSetup.js";
-import { getUrl, uploadLetter } from "../controllers/file/letter.controller.js";
+import {
+  getUrl,
+  saveLetter,
+  uploadLetter,
+} from "../controllers/file/letter.controller.js";
 
 const fileRouter = express.Router();
 
@@ -34,12 +39,9 @@ fileRouter.post("/createPolicy", authorizationMiddeleware, createPolicy);
 fileRouter.post("/setPolicyDetail", setPolicyDetail);
 fileRouter.get("/getFile/:docId", getFile);
 fileRouter.get("/getLetters", getLetters);
-fileRouter.post(
-  "/uploadTemplate",
-  authorizationMiddeleware,
-  uploadTemplateMiddleware,
-  uploadTemplate
-);
+fileRouter.get("/getLetter/:id", getLetterById);
+fileRouter.post("/saveLetter", saveLetter);
+fileRouter.post("/uploadTemplate", uploadTemplateMiddleware, uploadTemplate);
 fileRouter.get("/getTemplateById/:id", getTemplateById);
 fileRouter.post("/updateDocument/:id", editDocument);
 // fileRouter.post("/saveAsPdf", saveAsPdf);
