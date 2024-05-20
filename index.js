@@ -2,7 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import dotenv from "dotenv";
-import path from "path";
+import path, { parse } from "path";
 import userRouter from "./src/routes/user.Routes.js";
 import compression from "compression";
 import fileRouter from "./src/routes/file.routes.js";
@@ -16,6 +16,7 @@ import searchRouter from "./src/routes/globalsearch.routes.js";
 import versionControlRouter from "./src/routes/versioncontrol.routes.js";
 import { exceptionHandler } from "./src/middleware/errorHandlingMiddleware.js";
 import { pool } from "./src/core/database/db.js";
+import { DatabaseError } from "./src/Error/customError.js";
 
 const __dirname = path.resolve();
 
@@ -101,6 +102,147 @@ app.get("/getVersionbyID", async (req, res) => {
     const result = await pool.query(
       `SELECT * from document_version where id=$1;`,
       [docId]
+    );
+    const count = result.rows;
+    res.json(count);
+  } catch (error) {
+    console.error("Error executing query", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/getLatestVersionbyDocIdandUserId", async (req, res) => {
+  const docId = parseInt(req.query.id);
+  const userId = parseInt(req.query.user);
+  try {
+    const result = await pool.query(
+      `SELECT * from document_version where doc_id=$1 and created_by=$2 ORDER BY created_at DESC LIMIT 1`,
+      [docId, userId]
+    );
+    const count = result.rows;
+    res.json(count);
+  } catch (error) {
+    console.error("Error executing query", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/getPolicyApprovalsByUserId", async (req, res) => {
+  const docId = parseInt(req.query.id);
+  try {
+    const result = await pool.query(
+      `SELECT 
+      d.id, 
+      ar.id,
+      d.title, 
+      ar.status,
+      ar.doc_id,
+     
+      u2.first_name AS sent_by_first_name, 
+      u2.last_name AS sent_by_last_name
+  FROM 
+      approval_request ar
+  
+  JOIN 
+      user_table u2 ON ar.request_by = u2.id
+   JOIN document d ON ar.doc_id  = d.id
+  WHERE 
+      ar.request_to = $1;`,
+      [docId]
+    );
+    const count = result.rows;
+    res.json(count);
+  } catch (error) {
+    console.error("Error executing query", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+app.post("/api/setDocumentToApprove", async (req, res) => {
+  console.log(req.body);
+  const { admin_id, doc_id, user_id } = req.body;
+  const query = `
+  INSERT INTO approval_request(request_to, request_by,doc_id) VALUES($1,$2,$3) RETURNING *
+`;
+  const values = [parseInt(admin_id), parseInt(user_id), parseInt(doc_id)];
+  try {
+    const result = await pool.query(query, values);
+    console.log(result);
+    return res.status(201).json({
+      success: true,
+      message: "Document TO APPROVED SET",
+    });
+  } catch (error) {
+    console.log(error.message, "rg");
+    throw new DatabaseError("cant set to_approve field");
+  }
+});
+
+app.post("/api/rejectPolicyApproval", async (req, res) => {
+  const { id, reason } = req.body;
+  console.log(id, reason);
+  const query = `
+  UPDATE approval_request SET status = 'REJECTED' , reason=$2 where id =$1
+`;
+  const values = [parseInt(id), reason];
+  try {
+    const result = await pool.query(query, values);
+    console.log(result);
+    return res.status(201).json({
+      success: true,
+      message: "Document TO APPROVED SET",
+    });
+  } catch (error) {
+    console.log(error.message, "rg");
+    throw new DatabaseError("cant set to_approve field");
+  }
+});
+app.get("/api/approvePolicyApproval", async (req, res) => {
+  const id = parseInt(req.query.id);
+  const query = `
+  UPDATE approval_request SET status = 'APPROVED' where id =$1
+`;
+  const values = [parseInt(id)];
+  try {
+    const result = await pool.query(query, values);
+    console.log(result);
+    return res.status(201).json({
+      success: true,
+      message: "Policy Request Approved",
+    });
+  } catch (error) {
+    console.log(error.message, "rg");
+    throw new DatabaseError("cant set to_approve field");
+  }
+});
+app.post("/api/updatePolicyHtmlData", async (req, res) => {
+  const { id, htmldata, htmlJson } = req.body;
+  console.log(id);
+  const query = `
+  UPDATE document SET htmldata=$1, htmljson=$2  WHERE id=$3 RETURNING *
+`;
+  const values = [htmldata, htmlJson, parseInt(id)];
+
+  const query2 = `
+  DELETE FROM document_version WHERE doc_id=$1;
+`;
+  const values2 = [parseInt(id)];
+  try {
+    const result = await pool.query(query, values);
+    const result2 = await pool.query(query2, values2);
+    console.log(result);
+    return res.status(201).json({
+      success: true,
+      message: "Policy Request Approved",
+    });
+  } catch (error) {
+    console.log(error.message, "rg");
+    throw new DatabaseError("cant set to_approve field");
+  }
+});
+app.get("/getAdminList", async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT * from user_table where group_id = 2;`
     );
     const count = result.rows;
     res.json(count);

@@ -345,13 +345,43 @@ FROM
 export const getAllTemplates = async (req, res) => {
   try {
     const query = `SELECT id,  
-    category_id, 
+    mode, 
     created_at, 
     created_by, 
     title
-    FROM template`;
+    FROM template ORDER by created_at DESC `;
 
     const data = await pool.query(query);
+
+    // console.log(data);
+    if (data.rowCount === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "no templates found" });
+    }
+    console.log(data.rowCount);
+    return res
+      .status(200)
+      .json({ message: "documents are", success: true, data: data.rows });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error, success: false });
+  }
+};
+export const getAllTemplatesByStatus = async (req, res) => {
+  try {
+    let { status } = req.params;
+    console.log(status);
+    const data = await pool.query(
+      `SELECT id,  
+      mode, 
+      created_at, 
+      created_by, 
+      title
+      FROM template WHERE mode = $1 ORDER by created_at DESC  `,
+      [status]
+    );
 
     // console.log(data);
     if (data.rowCount === 0) {

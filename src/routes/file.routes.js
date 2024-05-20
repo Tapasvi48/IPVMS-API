@@ -13,6 +13,7 @@ import {
   setPolicyDetail,
   getAllTemplates,
   getLetters,
+  getAllTemplatesByStatus,
 } from "../controllers/file/File.controller.js";
 
 import {
@@ -44,6 +45,7 @@ fileRouter.post("/updateDocument/:id", editDocument);
 // fileRouter.post("/saveAsPdf", saveAsPdf);
 fileRouter.get("/getTemplate", gettemplates);
 fileRouter.get("/getAllTemplate", getAllTemplates);
+fileRouter.get("/getTemplateByStatus/:status", getAllTemplatesByStatus);
 // fileRouter.delete("/deleteTemplate", deleteTemplate);
 fileRouter.get("/getpaginateddocuments", getpaginateddocuments);
 fileRouter.get("/getRecentPolicies", getRecentPolicies);
