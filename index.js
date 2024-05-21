@@ -137,6 +137,9 @@ app.get("/getPolicyApprovalsByUserId", async (req, res) => {
       d.title, 
       ar.status,
       ar.doc_id,
+      ar.reason,
+      ar.request_to,
+      ar.request_by,
      
       u2.first_name AS sent_by_first_name, 
       u2.last_name AS sent_by_last_name
@@ -147,7 +150,41 @@ app.get("/getPolicyApprovalsByUserId", async (req, res) => {
       user_table u2 ON ar.request_by = u2.id
    JOIN document d ON ar.doc_id  = d.id
   WHERE 
-      ar.request_to = $1;`,
+      ar.request_to = $1 and ar.status = 'VIEW'; `,
+      [docId]
+    );
+    const count = result.rows;
+    res.json(count);
+  } catch (error) {
+    console.error("Error executing query", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/getPolicyApprovalsUserSent", async (req, res) => {
+  const docId = parseInt(req.query.id);
+  try {
+    const result = await pool.query(
+      `SELECT 
+      d.id, 
+      ar.id,
+      d.title, 
+      ar.status,
+      ar.doc_id,
+      ar.reason,
+      ar.request_to,
+      ar.request_by,
+     
+      u2.first_name AS sent_by_first_name, 
+      u2.last_name AS sent_by_last_name
+  FROM 
+      approval_request ar
+  
+  JOIN 
+      user_table u2 ON ar.request_to = u2.id
+   JOIN document d ON ar.doc_id  = d.id
+  WHERE 
+      ar.request_by = $1 and ar.status != 'APPROVED';`,
       [docId]
     );
     const count = result.rows;
