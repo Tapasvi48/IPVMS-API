@@ -15,6 +15,8 @@ import {
   getLetters,
   getAllTemplatesByStatus,
   getLetterById,
+  uploadSignSwiftLetter,
+  uploadLetterMinio,
 } from "../controllers/file/File.controller.js";
 
 import {
@@ -30,6 +32,8 @@ import {
   getUrl,
   saveLetter,
   uploadLetter,
+  updateLetterStatus,
+  getAllLetters,
 } from "../controllers/file/letter.controller.js";
 
 const fileRouter = express.Router();
@@ -55,7 +59,11 @@ fileRouter.get("/getRecentPolicies", getRecentPolicies);
 // Document routes
 fileRouter.get("/document", getPaginatedDocumentDetailsWithSearch);
 //bucket test endpoint
-fileRouter.post("/uploadtest", upload.single("file"), uploadLetter);
+fileRouter.post("/uploadLetter", upload.single("file"), uploadLetter);
 fileRouter.get("/getLetterUrl/:filename", getUrl);
+fileRouter.post("/upload/signswift", uploadSignSwiftLetter);
+fileRouter.post("/upload/letterpdf", upload.single("file"), uploadLetterMinio);
+fileRouter.post("/upload/updateLetterStatus", updateLetterStatus);
+fileRouter.get("/letter/:id", getAllLetters);
 
 export default fileRouter;

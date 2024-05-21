@@ -3,32 +3,45 @@ import { pool } from "../../core/database/db.js";
 import path from "path";
 import { minioClient } from "../../utils/minioSetup.js";
 import { DatabaseError } from "../../Error/customError.js";
+import { sendEmail, sendLetterEmail } from "../../core/Email/sendEmail.js";
+import { error } from "console";
 
 const __dirname = path.resolve();
 export const uploadLetter = async (req, res, next) => {
   console.log("hit upload");
   try {
     const filename = req.file.originalname.split(".")[0] + Date.now() + ".pdf";
-
-    await minioClient.putObject(
-      "ipvms-dev",
-      filename,
-      req.file.buffer,
-      async function (error, etag) {
-        if (error) {
-          console.log(error, "some error");
-          throw new DatabaseError("something wrong with file upload service");
-        }
-        try {
-          await saveUrlToDatabase(filename, req.userId, req.templateId);
-          return res.status(200).json({ message: "file uploaded success" });
-        } catch (err) {
-          console.log(err.message);
-          await deleteFileFromMinIO(filename);
-          throw new DatabaseError("failed to save url to database");
-        }
+    const templateId = req.body.templateId;
+    const userId = req.body.userId;
+    const email = req.body.email;
+    console.log(email);
+    var result;
+    try {
+      const html_data = req.body.html_data;
+      const letter_id = req.body.letter_id;
+      const htmlData1 = Buffer.from(html_data, "utf8");
+      if (typeof letter_id !== "undefined") {
+        result = await pool.query(
+          "INSERT INTO letters (template_id,userid,html_data) VALUES($1,$2,$3)",
+          [templateId, userId, htmlData1]
+        );
+      } else {
+        result = await pool.query(
+          "UPDATE TABLE letters SET html_data=$1 WHERE id=$2",
+          [htmlData1, letter_id]
+        );
       }
-    );
+    } catch (error) {
+      throw new DatabaseError("some error in saving letter in db");
+    }
+    try {
+      if (result) {
+        await sendLetterEmail(req.file, email);
+      }
+    } catch (error) {
+      throw error;
+    }
+    return res.status(200).json({ message: "pdf send success", success: true });
   } catch (error) {
     next(error);
   }
@@ -83,18 +96,47 @@ export const getUrl = async (req, res, next) => {
 
 export const saveLetter = async (req, res, next) => {
   console.log("hit upload");
-
   try {
-    const { userId, templateId, html_data } = req.body;
-    console.log(html_data);
+    const { recepientId, templateId, html_data, letter_id, createdby } =
+      req.body;
+
     const htmlData1 = Buffer.from(html_data, "utf8");
-    const result = pool.query(
-      "INSERT INTO letters (template_id,userid,html_data) VALUES($1,$2,$3)",
-      [templateId, userId, htmlData1]
-    );
+    if (!letter_id) {
+      const result = pool.query(
+        "INSERT INTO letters (template_id,userid,html_data,created_by) VALUES($1,$2,$3,$4)",
+        [templateId, recepientId, htmlData1, createdby]
+      );
+    } else {
+      const result = pool.query(
+        "UPDATE TABLE letters SET html_data=$1 WHERE id=$2",
+        [htmlData1, letter_id]
+      );
+    }
     return res
       .status(201)
       .json({ message: "Letter added successfully", success: true });
+  } catch (error) {
+    next(error);
+  }
+};
+export const updateLetterStatus = async (req, res, next) => {
+  try {
+    return res.status(200).json({ message: "succes" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllLetters = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const letters = await pool.query(
+      "SELECT l.status ,u.first_name as firstname ,u.last_name  as lastname from letters l JOIN user_table u ON u.id=l.userid  where created_by=$1",
+      [userId]
+    );
+    return res
+      .status(200)
+      .json({ message: "All queue letters are", data: letters.rows });
   } catch (error) {
     next(error);
   }

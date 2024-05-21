@@ -56,7 +56,7 @@ export const sendLetterEmail = async (pdfFile, email) => {
       attachments: [
         {
           filename: "letter.pdf",
-          content: new Buffer(pdfFile, "utf-8"),
+          content: new Buffer(pdfFile.buffer, "utf-8"),
         },
       ],
     });
