@@ -10,28 +10,46 @@ const __dirname = path.resolve();
 export const uploadLetter = async (req, res, next) => {
   console.log("hit upload");
   try {
-    const filename = req.file.originalname.split(".")[0] + Date.now() + ".pdf";
+    const filename = req.file.originalname;
     const templateId = req.body.templateId;
     const userId = req.body.userId;
     const email = req.body.email;
     console.log(email);
     var result;
+
+    try {
+      await minioClient.putObject(
+        "ipvms-dev",
+        filename,
+        req.file.buffer,
+        async function (err, etag) {
+          if (err) {
+            console.log(err);
+            throw new DatabaseError("error in uplaoding to minio");
+          }
+        }
+      );
+    } catch (error) {
+      throw new DatabaseError();
+    }
+
     try {
       const html_data = req.body.html_data;
       const letter_id = req.body.letter_id;
       const htmlData1 = Buffer.from(html_data, "utf8");
       if (typeof letter_id !== "undefined") {
         result = await pool.query(
-          "INSERT INTO letters (template_id,userid,html_data) VALUES($1,$2,$3)",
-          [templateId, userId, htmlData1]
+          "INSERT INTO letters (template_id,userid,html_data,status,filepath) VALUES($1,$2,$3,$4,$5)",
+          [templateId, userId, htmlData1, "PENDING", filename]
         );
       } else {
         result = await pool.query(
-          "UPDATE TABLE letters SET html_data=$1 WHERE id=$2",
-          [htmlData1, letter_id]
+          "UPDATE TABLE letters SET status=$1,filepath=$2  WHERE id=$3",
+          ["PENDING", filename, letter_id]
         );
       }
     } catch (error) {
+      console.log(error);
       throw new DatabaseError("some error in saving letter in db");
     }
     try {
@@ -97,14 +115,21 @@ export const getUrl = async (req, res, next) => {
 export const saveLetter = async (req, res, next) => {
   console.log("hit upload");
   try {
-    const { recepientId, templateId, html_data, letter_id, createdby } =
-      req.body;
+    const {
+      recipientId,
+      templateId,
+      html_data,
+      letter_id,
+      createdby,
+      email,
+      name,
+    } = req.body;
 
     const htmlData1 = Buffer.from(html_data, "utf8");
     if (!letter_id) {
       const result = pool.query(
-        "INSERT INTO letters (template_id,userid,html_data,created_by) VALUES($1,$2,$3,$4)",
-        [templateId, recepientId, htmlData1, createdby]
+        "INSERT INTO letters (template_id,userid,html_data,created_by,recipient_name,recipient_email) VALUES($1,$2,$3,$4,$5,$6)",
+        [templateId, recipientId, htmlData1, createdby, name, email]
       );
     } else {
       const result = pool.query(
@@ -121,7 +146,28 @@ export const saveLetter = async (req, res, next) => {
 };
 export const updateLetterStatus = async (req, res, next) => {
   try {
-    return res.status(200).json({ message: "succes" });
+    const html_data = req.body.htmlData;
+
+    const htmlData1 = Buffer.from(html_data, "utf8");
+    const letter_id = req.body.letterId;
+    const created_by = req.body.createdBy;
+    const userId = req.body.recipientId;
+    const template_id = req.body.templateId;
+    const name = req.body.name;
+    const email = req.body.email;
+    const fileName = req.body.fileName;
+    if (typeof letter_id !== "undefined") {
+      const result = pool.query(
+        "UPDATE TABLE letters SET html_data=$1,status=$3 WHERE id=$2",
+        [htmlData1, letter_id, "PENDING"]
+      );
+    } else {
+      const result = pool.query(
+        "INSERT INTO  letters (html_data,status,created_by,userid,template_id,recipient_name,recipient_email) VALUES($1,$2,$3,$4,$5,$6,$7)",
+        [htmlData1, "PENDING", created_by, userId, template_id, name, email]
+      );
+    }
+    return res.status(200).json({ message: "success", success: true });
   } catch (error) {
     next(error);
   }
@@ -131,7 +177,7 @@ export const getAllLetters = async (req, res, next) => {
   try {
     const userId = req.params.id;
     const letters = await pool.query(
-      "SELECT l.status ,u.first_name as firstname ,u.last_name  as lastname from letters l JOIN user_table u ON u.id=l.userid  where created_by=$1",
+      "SELECT l.status ,u.first_name as firstname ,l.recipient_name as name,u.last_name as lastname from letters l JOIN user_table u ON u.id=l.userid  where created_by=$1",
       [userId]
     );
     return res

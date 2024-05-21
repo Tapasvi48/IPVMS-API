@@ -606,6 +606,8 @@ WITH paginated_data AS (
     l.filepath,   
     l.created_at, 
     l.created_by, 
+    l.recipient_name as rname,
+    l.recipient_email as remail,
     CONCAT(us.first_name,us.last_name) as employee_name
     FROM letters l
     JOIN user_table AS us 
@@ -628,8 +630,6 @@ ON t.category_id=c.id
 ON t.id=pd.tid
 WHERE 
   t.title ILIKE '%'||$4||'%'
-
-
   LIMIT $1 OFFSET $2  
 `;
     const data = await pool.query(query, [
@@ -690,7 +690,7 @@ export const uploadSignSwiftLetter = async (req, res, next) => {
 
 export const uploadLetterMinio = async (req, res, next) => {
   console.log(req.file);
-  const fileName = req.file.originalname.split(".")[0] + Date.now() + ".pdf";
+  const fileName = req.file.originalname;
   console.log("file upload minio hit");
 
   try {
