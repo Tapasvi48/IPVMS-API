@@ -6,6 +6,7 @@ import {
   uploadTemplate,
   getDocumentById,
   getPaginatedDocumentDetailsWithSearch,
+  getPaginatedDocumentDetailsWithSearchForDraft,
 } from "../query/file.js";
 import { getPagination } from "../utils/getPagination.js";
 
@@ -120,7 +121,7 @@ export const createPolicy = async (body, userid) => {
 export const getPaginatedDocumentDetailsWithSearchService = async (req) => {
   const query = req.query;
   const title = req.query.title;
-  const category = req.query.category;
+  let category = req.query.category;
   console.log(title);
   //  /document?page=1&size=2
   const page = parseInt(query.page);
@@ -132,11 +133,22 @@ export const getPaginatedDocumentDetailsWithSearchService = async (req) => {
   const orderByDirection = query?.orderByDirection?.toUpperCase() || "ASC";
 
   try {
-    const response = await getPaginatedDocumentDetailsWithSearch(
-      [limit, offset, title, category],
-      orderByColumn,
-      orderByDirection
-    );
+    let response;
+    if (category !== "Draft") {
+      response = await getPaginatedDocumentDetailsWithSearch(
+        [limit, offset, title, category],
+        orderByColumn,
+        orderByDirection
+      );
+    } else {
+      category = "";
+
+      response = await getPaginatedDocumentDetailsWithSearchForDraft(
+        [limit, offset, title, category],
+        orderByColumn,
+        orderByDirection
+      );
+    }
 
     if (response.rowCount != 0 || null) {
       const data = {
