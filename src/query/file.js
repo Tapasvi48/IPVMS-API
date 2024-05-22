@@ -49,7 +49,7 @@ export const getTemplate = async (data) => {
   const { id } = data;
   try {
     const result = await pool.query(
-      "SELECT convert_from(htmldata,'utf8') as htmldata,title,category_id,description FROM template WHERE id=$1",
+      "SELECT convert_from(htmldata,'utf8') as htmldata,title,mode,description FROM template WHERE id=$1",
       [id]
     );
     return result;

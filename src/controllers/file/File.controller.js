@@ -178,6 +178,7 @@ export const uploadTemplate = async (req, res) => {
 
 export const getTemplateById = async (req, res) => {
   const id = req.params.id;
+  console.log(id);
   if (!id) {
     return res.status(400).json({
       success: false,
