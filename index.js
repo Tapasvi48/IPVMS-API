@@ -160,6 +160,19 @@ app.get("/getPolicyApprovalsByUserId", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+app.get("/deleteTemplate", async (req, res) => {
+  const docId = parseInt(req.query.id);
+  try {
+    const result = await pool.query(`DELETE FROM template WHERE id = $1`, [
+      docId,
+    ]);
+    const count = result.rows;
+    res.json(count);
+  } catch (error) {
+    console.error("Error executing query", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 app.get("/getPolicyApprovalsUserSent", async (req, res) => {
   const docId = parseInt(req.query.id);
