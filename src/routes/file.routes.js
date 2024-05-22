@@ -45,7 +45,12 @@ fileRouter.get("/getFile/:docId", getFile);
 fileRouter.get("/getLetters", getLetters);
 fileRouter.get("/getLetter/:id", getLetterById);
 fileRouter.post("/saveLetter", saveLetter);
-fileRouter.post("/uploadTemplate", uploadTemplateMiddleware, uploadTemplate);
+fileRouter.post(
+  "/uploadTemplate",
+  authorizationMiddeleware,
+  uploadTemplateMiddleware,
+  uploadTemplate
+);
 fileRouter.get("/getTemplateById/:id", getTemplateById);
 fileRouter.post("/updateDocument/:id", editDocument);
 // fileRouter.post("/saveAsPdf", saveAsPdf);

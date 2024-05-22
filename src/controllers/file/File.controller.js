@@ -158,7 +158,8 @@ WHERE
 };
 
 export const uploadTemplate = async (req, res) => {
-  let { name, description, categoryId, htmlText } = req.body;
+  const userid = req.user.id;
+  let { name, description, categoryId, htmlText, mode, htmljson } = req.body;
 
   try {
     const htmlData = Buffer.from(htmlText, "utf8");
@@ -168,7 +169,10 @@ export const uploadTemplate = async (req, res) => {
       name,
       description,
       categoryId,
-      htmlData
+      htmlData,
+      mode,
+      htmljson,
+      userid
     );
   } catch (error) {
     return res.status(500).json({
