@@ -42,7 +42,7 @@ userRouter.post(
   resetPasswordAuth
 );
 userRouter.get("/getUserInfo", authorizationMiddeleware, getUserInfo);
-userRouter.get("/getUserInfo/:id", getUserInfoById);
+userRouter.get("/getUserById/:id", getUserInfoById);
 
 userRouter.post("/sendInvite", sendInvite);
 userRouter.post("/accountsetup", authorizationMiddeleware, setupAccount);

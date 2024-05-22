@@ -160,7 +160,7 @@ export const getUserInfoById = async (req, res, next) => {
     );
 
     const users = user.rows[0];
-    console.log(users);
+    console.log(users, userId, "in get by id");
 
     if (user.rows.length === 0) {
       return res.status(404).json({
