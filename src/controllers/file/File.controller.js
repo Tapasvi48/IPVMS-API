@@ -5,6 +5,9 @@ import path from "path";
 import { sendLetterEmail } from "../../core/Email/sendEmail.js";
 import { getPagination } from "../../utils/getPagination.js";
 import { NotFoundError } from "../../Error/customError.js";
+import { pool2 } from "../../core/database/db2.js";
+import { DatabaseError } from "../../Error/customError.js";
+import { minioClient } from "../../utils/minioSetup.js";
 
 const __dirname = path.resolve();
 export const uploadFile = async (req, res) => {
@@ -604,6 +607,8 @@ WITH paginated_data AS (
     l.filepath,   
     l.created_at, 
     l.created_by, 
+    l.recipient_name as rname,
+    l.recipient_email as remail,
     CONCAT(us.first_name,us.last_name) as employee_name
     FROM letters l
     JOIN user_table AS us 
@@ -626,8 +631,6 @@ ON t.category_id=c.id
 ON t.id=pd.tid
 WHERE 
   t.title ILIKE '%'||$4||'%'
-
-
   LIMIT $1 OFFSET $2  
 `;
     const data = await pool.query(query, [
@@ -665,6 +668,62 @@ export const getLetterById = async (req, res, next) => {
     return res
       .status(200)
       .json({ message: "documents are", success: true, data: data.rows[0] });
+  } catch (error) {
+    next(error);
+  }
+};
+export const uploadSignSwiftLetter = async (req, res, next) => {
+  const { ShareLink, userId } = req.body;
+  try {
+    try {
+      const res = await pool2.query(
+        `INSERT INTO "Document" ("userId","ShareLink") VALUES ('${userId}','${ShareLink}')`
+      );
+    } catch (error) {
+      throw new DatabaseError("something wrong with db");
+    }
+
+    return res.status(200).json({ message: "documents are", success: true });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const uploadLetterMinio = async (req, res, next) => {
+  console.log(req.file);
+  const fileName = req.file.originalname;
+  console.log("file upload minio hit");
+
+  try {
+    var url;
+    await minioClient.putObject(
+      "ipvms-dev",
+      fileName,
+      req.file.buffer,
+      async function (err, etag) {
+        if (err) {
+          console.log(err);
+          throw new DatabaseError("error in uplaoding to minio");
+        } else {
+          await minioClient.presignedGetObject(
+            "ipvms-dev",
+            fileName,
+            7 * 24 * 60 * 60,
+            function (err, presignedUrl) {
+              if (err) {
+                console.log(err.message);
+                throw new DatabaseError("error in getting file");
+              }
+              url = presignedUrl;
+            }
+          );
+        }
+      }
+    );
+
+    return res
+      .status(200)
+      .json({ message: "documents are", success: true, url: url });
   } catch (error) {
     next(error);
   }
