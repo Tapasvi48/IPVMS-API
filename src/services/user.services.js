@@ -182,7 +182,7 @@ export const sendInvite = async (body) => {
     console.log("hit ");
     //middleware check name and email null?
     console.log(email, name);
-    if (!email || !name) {
+    if (!email) {
       throw new ValidationError("missing fields");
     }
     const user = await getUser({ email });
@@ -190,8 +190,8 @@ export const sendInvite = async (body) => {
     if (user.rows.length > 0) {
       throw new ConflictError("User email already Exist");
     } else {
-      const firstName = name.split(" ")[0];
-      const lastName = name.split(" ")[1] || "";
+      const firstName = name?.split(" ")[0] || "";
+      const lastName = name?.split(" ")[1] || "";
       const password = generatePassword();
       console.log("");
       const hashedPassword = await generateHashPassword(password);

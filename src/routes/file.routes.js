@@ -34,6 +34,7 @@ import {
   uploadLetter,
   updateLetterStatus,
   getAllLetters,
+  deleteLetter,
 } from "../controllers/file/letter.controller.js";
 
 const fileRouter = express.Router();
@@ -65,5 +66,6 @@ fileRouter.post("/upload/signswift", uploadSignSwiftLetter);
 fileRouter.post("/upload/letterpdf", upload.single("file"), uploadLetterMinio);
 fileRouter.post("/upload/updateLetterStatus", updateLetterStatus);
 fileRouter.get("/letter/:id", getAllLetters);
+fileRouter.delete("/deleteLetter/:id", deleteLetter);
 
 export default fileRouter;
