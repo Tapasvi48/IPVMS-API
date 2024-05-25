@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import path from "path";
 import * as userService from "../../services/user.Services.js";
 import {
+  AccountSetupError,
   AuthorizationError,
   ConflictError,
   NotFoundError,
@@ -160,7 +161,7 @@ export const getUserInfoById = async (req, res, next) => {
     );
 
     const users = user.rows[0];
-    console.log(users, userId, "in get by id");
+    console.log(users);
 
     if (user.rows.length === 0) {
       return res.status(404).json({
@@ -207,6 +208,7 @@ export const setupAccount = async (req, res, next) => {
     const user = await pool.query("SELECT * FROM user_table WHERE id=$1", [
       userId,
     ]);
+
     if (user.password_reset) {
       throw new AccountSetupError("Account is already setup for user");
     } else {

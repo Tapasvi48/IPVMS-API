@@ -60,6 +60,7 @@ export const authorizationMiddeleware = async (req, res, next) => {
     next(new AuthorizationError("Authorization token not found"));
   }
   try {
+    console.log(token);
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
