@@ -5,7 +5,7 @@ import path from "path";
 import { sendLetterEmail } from "../../core/Email/sendEmail.js";
 import { getPagination } from "../../utils/getPagination.js";
 import { NotFoundError } from "../../Error/customError.js";
-import { pool2 } from "../../core/database/db2.js";
+// import { pool2 } from "../../core/database/db2.js";
 import { DatabaseError } from "../../Error/customError.js";
 import { minioClient } from "../../utils/minioSetup.js";
 
@@ -591,7 +591,8 @@ export const getLetters = async (req, res, next) => {
   const query = req.query;
   const name = req.query.name || "";
   const template = req.query.template || "";
-  const status = req.query.status || "";
+  const status = req.query.status ? req.query.status.split(",") : [];
+
   console.log(status);
 
   //  /document?page=1&size=2
@@ -604,47 +605,34 @@ export const getLetters = async (req, res, next) => {
 
   try {
     const query = `
-WITH paginated_data AS (
-  SELECT 
-    l.id, 
-    l.template_id as tid,
-    l.filepath,   
-    l.created_at, 
-    l.created_by, 
-    l.recipient_name as rname,
-    l.recipient_email as remail,
-    CONCAT(us.first_name,us.last_name) as employee_name
-    FROM letters l
-    JOIN user_table AS us 
-    ON us.id=l.userid
-    WHERE CONCAT(us.first_name, us.last_name) ILIKE '%'||$3||'%' and l.status=$5
-
-  ),
-total_count AS (
-  SELECT COUNT(*) as total_count FROM letters 
-)
-SELECT 
-  pd.*, 
-  (SELECT total_count FROM total_count) as total_count,
-  t.title as template_name,c.category
-FROM 
-paginated_data pd
-JOIN  template t
-JOIN category c
-ON t.category_id=c.id 
-ON t.id=pd.tid
-WHERE 
-  t.title ILIKE '%'||$4||'%'
-  LIMIT $1 OFFSET $2  
+    WITH paginated_data AS (
+      SELECT 
+        l.id, 
+        l.template_id AS tid,
+        l.filepath,   
+        l.created_at, 
+        l.created_by, 
+        l.status,
+        l.recipient_name AS rname,
+        l.recipient_email AS remail,
+        CONCAT(us.first_name, ' ', us.last_name) AS employee_name
+      FROM letters l
+      JOIN user_table AS us 
+        ON us.id = l.userid
+      WHERE l.status = ANY($1)
+    )
+    SELECT 
+      pd.*, 
+      t.title AS template_name
+    FROM 
+      paginated_data pd
+    JOIN template t
+      ON t.id = pd.tid;
+    
 `;
-    const data = await pool.query(query, [
-      limit,
-      offset,
-      name,
-      template,
-      status.toString(),
-    ]);
-    console.log();
+
+    const data = await pool.query(query, [status]);
+    console.log(data.rows, "letters are");
     if (data.rows.length === 0) {
       throw new NotFoundError("no document found");
     }

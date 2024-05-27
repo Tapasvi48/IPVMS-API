@@ -72,11 +72,11 @@ export class BadGatewayError extends Error {
   }
 }
 export class AccountSetupError extends Error {
-  constructor(message) {
-    super(message);
+  constructor(message, jwt) {
+    super(`${message}:${jwt}`);
     this.name = "User account is not setup";
-    this.statusCode = 418;
+    this.statusCode = 318;
     this.error = message;
-    this.success = false;
+    this.success = true;
   }
 }

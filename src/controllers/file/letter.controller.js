@@ -2,7 +2,7 @@ import { pool } from "../../core/database/db.js";
 // import puppeteer from "puppeteer";
 import path from "path";
 import { minioClient } from "../../utils/minioSetup.js";
-import { DatabaseError } from "../../Error/customError.js";
+import { DatabaseError, ValidationError } from "../../Error/customError.js";
 import { sendEmail, sendLetterEmail } from "../../core/Email/sendEmail.js";
 import { error } from "console";
 
@@ -80,11 +80,20 @@ export const deleteFileFromMinIO = async (filename) => {
   await minioClient.removeObject("ipvms-dev", filename);
 };
 export const deleteLetter = async (req, res, next) => {
-  const filename = req.filename;
+  const id = req.params.id;
   try {
-    await minioClient.removeObject("ipvms-dev", filename);
+    if (typeof id === "undefined") {
+      throw new ValidationError("id is not defined");
+    }
+    try {
+      const result = await pool.query("DELETE FROM letters where id=$1", [id]);
+      return res.status(200).json({ success: true, message: "successfull" });
+    } catch (error) {
+      console.log(error.message, "error");
+      throw new DatabaseError("some error in db query");
+    }
   } catch (error) {
-    next(new DatabaseError("deleting file from minio error"));
+    next(error);
   }
 };
 
@@ -147,7 +156,6 @@ export const saveLetter = async (req, res, next) => {
 export const updateLetterStatus = async (req, res, next) => {
   try {
     const html_data = req.body.htmlData;
-
     const htmlData1 = Buffer.from(html_data, "utf8");
     const letter_id = req.body.letterId;
     const created_by = req.body.createdBy;
@@ -156,15 +164,25 @@ export const updateLetterStatus = async (req, res, next) => {
     const name = req.body.name;
     const email = req.body.email;
     const fileName = req.body.fileName;
+    const swift_id = req.body.swift_id;
     if (typeof letter_id !== "undefined") {
       const result = pool.query(
-        "UPDATE TABLE letters SET html_data=$1,status=$3 WHERE id=$2",
-        [htmlData1, letter_id, "PENDING"]
+        "UPDATE TABLE letters SET html_data=$1,status=$3,swift_id=$4 WHERE id=$2",
+        [htmlData1, letter_id, "PENDING", swift_id]
       );
     } else {
       const result = pool.query(
-        "INSERT INTO  letters (html_data,status,created_by,userid,template_id,recipient_name,recipient_email) VALUES($1,$2,$3,$4,$5,$6,$7)",
-        [htmlData1, "PENDING", created_by, userId, template_id, name, email]
+        "INSERT INTO  letters (html_data,status,created_by,userid,template_id,recipient_name,recipient_email,swift_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8)",
+        [
+          htmlData1,
+          "PENDING",
+          created_by,
+          userId,
+          template_id,
+          name,
+          email,
+          swift_id,
+        ]
       );
     }
     return res.status(200).json({ message: "success", success: true });
@@ -176,13 +194,31 @@ export const updateLetterStatus = async (req, res, next) => {
 export const getAllLetters = async (req, res, next) => {
   try {
     const userId = req.params.id;
+    console.log(userId, "user iddd is");
     const letters = await pool.query(
-      "SELECT l.status ,u.first_name as firstname ,l.recipient_name as name,u.last_name as lastname from letters l JOIN user_table u ON u.id=l.userid  where created_by=$1",
+      "SELECT l.status ,u.first_name as firstname ,l.recipient_name as name,l.recipient_email as email,u.last_name as lastname from letters l JOIN user_table u ON u.id=l.userid  where created_by=$1",
       [userId]
     );
+
+    console.log("wered user id", letters.rows);
     return res
       .status(200)
       .json({ message: "All queue letters are", data: letters.rows });
+  } catch (error) {
+    next(error);
+  }
+};
+export const updateLetterStatushook = async (req, res, next) => {
+  const swift_id = req.params.id;
+  console.log(swift_id, "Swift id is");
+  try {
+    await pool.query("UPDATE letters SET status=$1 where swift_id=$2", [
+      "SIGNED",
+      swift_id,
+    ]);
+    return res
+      .status(200)
+      .json({ success: true, message: "succesully updated status" });
   } catch (error) {
     next(error);
   }

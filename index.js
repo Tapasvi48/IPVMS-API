@@ -3,7 +3,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import path, { parse } from "path";
-import userRouter from "./src/routes/user.Routes.js";
+import userRouter from "./src/routes/user.routes.js";
 import compression from "compression";
 import fileRouter from "./src/routes/file.routes.js";
 import rateLimit from "express-rate-limit";
@@ -17,6 +17,7 @@ import versionControlRouter from "./src/routes/versioncontrol.routes.js";
 import { exceptionHandler } from "./src/middleware/errorHandlingMiddleware.js";
 import { pool } from "./src/core/database/db.js";
 import { DatabaseError } from "./src/Error/customError.js";
+import hookRouter from "./src/routes/webhook.routes.js";
 
 const __dirname = path.resolve();
 
@@ -36,6 +37,7 @@ app.use("/api/categories", categoryRouter);
 app.use("/api/file", fileRouter);
 app.use("/api/globalsearch", searchRouter);
 app.use("/api/versioncontrol", versionControlRouter);
+app.use("/webhook", hookRouter);
 app.get("/documents/count/category", async (req, res) => {
   try {
     const result = await pool.query(
