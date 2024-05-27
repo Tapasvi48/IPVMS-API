@@ -186,21 +186,19 @@ export const resetPasswordAuth = async (password, userId) => {
 export const sendInvite = async (body) => {
   try {
     const { email } = body;
-    console.log("hit ");
-    //middleware check name and email null?
-    console.log(email);
     if (!email) {
       throw new ValidationError("missing fields");
     }
+    const firstName = "";
+    const lastName = "";
+
     const user = await getUser({ email });
     // if email already exist then conflict error
     if (user.rows.length > 0) {
       throw new ConflictError("User email already Exist");
     } else {
-      // const firstName = name?.split(" ")[0] || "";
-      // const lastName = name?.split(" ")[1] || "";
+
       const password = generatePassword();
-      console.log("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo----", password);
       const hashedPassword = await generateHashPassword(password);
       const isActive = true;
       if (hashedPassword) {

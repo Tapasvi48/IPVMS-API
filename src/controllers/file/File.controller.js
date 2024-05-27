@@ -592,8 +592,8 @@ export const getLetters = async (req, res, next) => {
   console.log(status);
 
   //  /document?page=1&size=2
-  const page = parseInt(query.page);
-  const size = parseInt(query.size);
+  const page = parseInt(query.page) || 0;
+  const size = parseInt(query.size) || 5;
   const { limit, offset } = getPagination(page, size);
   console.log("page", limit, offset);
   console.log(name.toString(), template.toString(), "SADA");
@@ -611,9 +611,10 @@ export const getLetters = async (req, res, next) => {
         l.status,
         l.recipient_name AS rname,
         l.recipient_email AS remail,
-        CONCAT(us.first_name, ' ', us.last_name) AS employee_name
+        CONCAT(us.first_name, ' ', us.last_name) AS employee_name,
+        COUNT(*) OVER() AS total_count
       FROM letters l
-      JOIN user_table AS us 
+      JOIN user_table us 
         ON us.id = l.userid
       WHERE l.status = ANY($1)
     )
@@ -623,11 +624,14 @@ export const getLetters = async (req, res, next) => {
     FROM 
       paginated_data pd
     JOIN template t
-      ON t.id = pd.tid;
+      ON pd.tid = t.id
+    ORDER BY created_at DESC
+    LIMIT $2 OFFSET $3;
+    
     
 `;
 
-    const data = await pool.query(query, [status]);
+    const data = await pool.query(query, [status, limit, offset]);
     console.log(data.rows, "letters are");
     if (data.rows.length === 0) {
       throw new NotFoundError("no document found");
@@ -644,7 +648,7 @@ export const getLetterById = async (req, res, next) => {
   const { id } = req.params;
   try {
     const data = await pool.query(
-      "SELECT convert_from(html_data,'utf8') as html_data FROM letters where id=$1",
+      "SELECT convert_from(html_data,'utf8') as html_data,recipient_name,recipient_email,userid as recipientId,template_id,id as letter_id FROM letters where id=$1",
       [id]
     );
     console.log(data.rows[0]);
