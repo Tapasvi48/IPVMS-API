@@ -142,7 +142,7 @@ export const saveLetter = async (req, res, next) => {
       );
     } else {
       const result = pool.query(
-        "UPDATE TABLE letters SET html_data=$1 WHERE id=$2",
+        "UPDATE  letters SET html_data=$1 WHERE id=$2",
         [htmlData1, letter_id]
       );
     }

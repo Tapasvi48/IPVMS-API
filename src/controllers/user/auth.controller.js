@@ -6,7 +6,9 @@ import {
   AuthorizationError,
   ConflictError,
   NotFoundError,
+  ValidationError,
 } from "../../Error/customError.js";
+import { emailValidation } from "../../utils/inputValidation.js";
 
 const __dirname = path.resolve();
 dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
@@ -27,6 +29,7 @@ export const registerUser = async (req, res, next) => {
 export const loginUser = async (req, res, next) => {
   try {
     const { users, token } = await userService.loginUserService(req.body);
+
     return res.status(200).json({
       success: true,
       message: "Login Success",
@@ -186,6 +189,11 @@ export const sendInvite = async (req, res, next) => {
   //send invite to user who are not on platform yet
 
   try {
+    if (!emailValidation(req.body.email).success) {
+      console.log("emai, format");
+      throw new ValidationError("Invalid email format");
+    }
+
     const email = await userService.sendInvite(req.body);
     return res.status(200).json({
       success: true,
