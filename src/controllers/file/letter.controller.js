@@ -5,6 +5,9 @@ import { minioClient } from "../../utils/minioSetup.js";
 import { DatabaseError, ValidationError } from "../../Error/customError.js";
 import { sendEmail, sendLetterEmail } from "../../core/Email/sendEmail.js";
 import { error } from "console";
+import { entityTypeIdMapping } from "../../utils/notification.config.js";
+import { Entity_Group } from "../../constants/notificationsConstants.js";
+import { add_notification } from "../../services/notification.services.js";
 
 const __dirname = path.resolve();
 export const uploadLetter = async (req, res, next) => {
@@ -14,6 +17,7 @@ export const uploadLetter = async (req, res, next) => {
     const templateId = req.body.templateId;
     const userId = req.body.userId;
     const email = req.body.email;
+    const actor_id = req.body.ipvms_userId;
     console.log(email);
     var result;
 
@@ -39,15 +43,22 @@ export const uploadLetter = async (req, res, next) => {
       const htmlData1 = Buffer.from(html_data, "utf8");
       if (typeof letter_id !== "undefined") {
         result = await pool.query(
-          "INSERT INTO letters (template_id,userid,html_data,status,filepath) VALUES($1,$2,$3,$4,$5)",
+          "INSERT INTO letters (template_id,userid,html_data,status,filepath) VALUES($1,$2,$3,$4,$5) RETURNING *",
           [templateId, userId, htmlData1, "PENDING", filename]
         );
       } else {
         result = await pool.query(
-          "UPDATE TABLE letters SET status=$1,filepath=$2  WHERE id=$3",
+          "UPDATE TABLE letters SET status=$1,filepath=$2  WHERE id=$3 RETURNING *",
           ["PENDING", filename, letter_id]
         );
       }
+      await add_notification(
+        entityTypeIdMapping.LETTER_SENT,
+        result?.rows[0]?.id,
+        Entity_Group.LETTER,
+        userId,
+        actor_id
+      );
     } catch (error) {
       console.log(error);
       throw new DatabaseError("some error in saving letter in db");
@@ -142,7 +153,7 @@ export const saveLetter = async (req, res, next) => {
       );
     } else {
       const result = pool.query(
-        "UPDATE TABLE letters SET html_data=$1 WHERE id=$2",
+        "UPDATE  letters SET html_data=$1 WHERE id=$2",
         [htmlData1, letter_id]
       );
     }
@@ -216,6 +227,13 @@ export const updateLetterStatushook = async (req, res, next) => {
       "SIGNED",
       swift_id,
     ]);
+    // await add_notification(
+    //   entityTypeIdMapping.LETTER_SIGNED,
+    //   doc_id,
+    //   Entity_Group.LETTER,
+    //   notifier_id,
+    //   actor_id
+    // );
     return res
       .status(200)
       .json({ success: true, message: "succesully updated status" });

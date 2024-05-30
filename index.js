@@ -18,6 +18,13 @@ import { exceptionHandler } from "./src/middleware/errorHandlingMiddleware.js";
 import { pool } from "./src/core/database/db.js";
 import { DatabaseError } from "./src/Error/customError.js";
 import hookRouter from "./src/routes/webhook.routes.js";
+import { add_notification } from "./src/services/notification.services.js";
+import {
+  Entity_Group,
+  RoleGroupIdMapping,
+} from "./src/constants/notificationsConstants.js";
+import { entityTypeIdMapping } from "./src/utils/notification.config.js";
+import notificationRouter from "./src/routes/notifications.routes.js";
 
 const __dirname = path.resolve();
 
@@ -37,6 +44,7 @@ app.use("/api/categories", categoryRouter);
 app.use("/api/file", fileRouter);
 app.use("/api/globalsearch", searchRouter);
 app.use("/api/versioncontrol", versionControlRouter);
+app.use("/api/notification", notificationRouter);
 app.use("/webhook", hookRouter);
 app.get("/documents/count/category", async (req, res) => {
   try {
@@ -218,7 +226,16 @@ app.post("/api/setDocumentToApprove", async (req, res) => {
   const values = [parseInt(admin_id), parseInt(user_id), parseInt(doc_id)];
   try {
     const result = await pool.query(query, values);
+
+    await add_notification(
+      entityTypeIdMapping.SEND_APPROVAL,
+      doc_id,
+      Entity_Group.POLICY,
+      admin_id,
+      user_id
+    );
     console.log(result);
+
     return res.status(201).json({
       success: true,
       message: "Document TO APPROVED SET",
@@ -233,12 +250,23 @@ app.post("/api/rejectPolicyApproval", async (req, res) => {
   const { id, reason } = req.body;
   console.log(id, reason);
   const query = `
-  UPDATE approval_request SET status = 'REJECTED' , reason=$2 where id =$1
+  UPDATE approval_request SET status = 'REJECTED' , reason=$2 where id =$1 RETURNING *
 `;
+
   const values = [parseInt(id), reason];
   try {
     const result = await pool.query(query, values);
     console.log(result);
+    const docId = result.rows[0].doc_id;
+    const actor_id = result.rows[0].request_to;
+    const user_id = result?.rows[0]?.request_by;
+    await add_notification(
+      entityTypeIdMapping.REJECTED,
+      docId,
+      Entity_Group.POLICY,
+      user_id,
+      actor_id
+    );
     return res.status(201).json({
       success: true,
       message: "Document TO APPROVED SET",
@@ -250,13 +278,26 @@ app.post("/api/rejectPolicyApproval", async (req, res) => {
 });
 app.get("/api/approvePolicyApproval", async (req, res) => {
   const id = parseInt(req.query.id);
-  const query = `
-  UPDATE approval_request SET status = 'APPROVED' where id =$1
-`;
+
+  const query = `UPDATE approval_request SET status = 'APPROVED' where id =$1 RETURNING *`;
+
   const values = [parseInt(id)];
   try {
     const result = await pool.query(query, values);
-    console.log(result);
+    // console.log(result);
+    const docId = result?.rows[0]?.doc_id;
+    const actor_id = result?.rows[0]?.request_to;
+    console.log(docId, "Dco id is");
+
+    const entity_group = "EMPLOYEE";
+    await add_notification(
+      entityTypeIdMapping.APPROVED,
+      docId,
+      Entity_Group.POLICY,
+      0,
+      actor_id,
+      RoleGroupIdMapping.EMPLOYEE
+    );
     return res.status(201).json({
       success: true,
       message: "Policy Request Approved",
@@ -273,7 +314,6 @@ app.post("/api/updatePolicyHtmlData", async (req, res) => {
   UPDATE document SET htmldata=$1, htmljson=$2  WHERE id=$3 RETURNING *
 `;
   const values = [htmldata, htmlJson, parseInt(id)];
-
   const query2 = `
   DELETE FROM document_version WHERE doc_id=$1;
 `;

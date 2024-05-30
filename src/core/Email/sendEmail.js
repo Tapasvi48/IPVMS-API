@@ -75,7 +75,7 @@ export const sendInvitationEmail = async (email, password) => {
         pass: process.env.SMTP_PASS,
       },
     });
-    const action_url = "";
+    const action_url = "http://ipvms.exitest.com/login";
     const htmlTemp = invitationTemplate(email, password, action_url);
     const mail = await transporter.sendMail({
       from: process.env.SMTP_USER,
