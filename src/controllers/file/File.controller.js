@@ -67,7 +67,18 @@ export const getFile = async (req, res) => {
 
   try {
     const document = await pool.query(
-      "SELECT  htmljson , convert_from(htmldata,'utf8') as data  FROM document WHERE id=$1",
+      `SELECT 
+      d.title,  
+      d.htmljson, 
+      convert_from(d.htmldata, 'utf8') AS data,
+      d.category_id,
+      c.category 
+  FROM 
+      document d
+  JOIN 
+      category c ON d.category_id = c.id
+  WHERE 
+      d.id = $1;`,
       [docId]
     );
     if (document.rows.length === 0) {
