@@ -12,6 +12,7 @@ VALUES ($1, $2, $3)
 RETURNING *`;
   //notifier id can be 1,2,3 so on
   try {
+    console.log("direct message", notifier_id, status);
     const values = await pool.query(query, [
       notificationObjectId,
       notifier_id,
@@ -147,7 +148,7 @@ export const add_notification = async (
     );
 
     await createNotificationChange(notificationObjectId, actor_id);
-    if (group_id) {
+    if (group_id !== null) {
       // Broadcast notification
       await createBroadCastNotification(notificationObjectId, group_id, 1);
     } else {
