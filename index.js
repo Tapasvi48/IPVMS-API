@@ -52,6 +52,7 @@ app.get("/documents/count/category", async (req, res) => {
       `SELECT c.id, c.category, c.color, c.svg, COUNT(d.id) AS total_documents
       FROM category c
       LEFT JOIN document d ON c.id = d.category_id
+      where d.is_active = TRUE
       GROUP BY c.id, c.category,c.color,c.svg UNION
 
 SELECT 
@@ -301,6 +302,58 @@ app.get("/api/approvePolicyApproval", async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Policy Request Approved",
+    });
+  } catch (error) {
+    console.log(error.message, "rg");
+    throw new DatabaseError("cant set to_approve field");
+  }
+});
+app.get("/api/activepolicy", async (req, res) => {
+  const id = parseInt(req.query.id);
+  const actor_id = parseInt(req.query.actor_id);
+
+  const query = `UPDATE document SET is_active = TRUE where id =$1 RETURNING *`;
+
+  const values = [parseInt(id)];
+  try {
+    const result = await pool.query(query, values);
+    // console.log(result);
+    const docId = result?.rows[0]?.id;
+
+    console.log(docId, "Dco id is");
+
+    const entity_group = "EMPLOYEE";
+    await add_notification(
+      entityTypeIdMapping.POLICY_ACTIVE,
+      docId,
+      Entity_Group.POLICY,
+      0,
+      actor_id,
+      RoleGroupIdMapping.EMPLOYEE
+    );
+    return res.status(201).json({
+      success: true,
+      message: "Policy gets activated",
+    });
+  } catch (error) {
+    console.log(error.message, "rg");
+    throw new DatabaseError("cant set to_approve field");
+  }
+});
+app.get("/api/deactivatepolicy", async (req, res) => {
+  const id = parseInt(req.query.id);
+  const actor_id = parseInt(req.query.actor_id);
+
+  const query = `UPDATE document SET is_active = FALSE where id =$1 RETURNING *`;
+
+  const values = [parseInt(id)];
+  try {
+    const result = await pool.query(query, values);
+    // console.log(result);
+
+    return res.status(201).json({
+      success: true,
+      message: "Policy gets deactivated",
     });
   } catch (error) {
     console.log(error.message, "rg");

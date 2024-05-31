@@ -67,7 +67,19 @@ export const getFile = async (req, res) => {
 
   try {
     const document = await pool.query(
-      "SELECT  htmljson , convert_from(htmldata,'utf8') as data  FROM document WHERE id=$1",
+      `SELECT 
+      d.title,  
+      d.htmljson, 
+      convert_from(d.htmldata, 'utf8') AS data,
+      d.category_id,
+      c.category,
+      d.is_active 
+  FROM 
+      document d
+  JOIN 
+      category c ON d.category_id = c.id
+  WHERE 
+      d.id = $1;`,
       [docId]
     );
     if (document.rows.length === 0) {
@@ -158,7 +170,8 @@ WHERE
 };
 
 export const uploadTemplate = async (req, res) => {
-  let { name, description, categoryId, htmlText } = req.body;
+  const userid = req.user.id;
+  let { name, description, categoryId, htmlText, mode, htmljson } = req.body;
 
   try {
     const htmlData = Buffer.from(htmlText, "utf8");
@@ -168,7 +181,10 @@ export const uploadTemplate = async (req, res) => {
       name,
       description,
       categoryId,
-      htmlData
+      htmlData,
+      mode,
+      htmljson,
+      userid
     );
   } catch (error) {
     return res.status(500).json({
@@ -437,7 +453,9 @@ export const getRecentPolicies = async (req, res) => {
     d.created_at,
 	u.first_name
   FROM document d
+
   JOIN user_table u ON d.created_by =u.id
+  where d.is_active = TRUE
   ORDER BY d.created_at DESC
   LIMIT 5;
 `;

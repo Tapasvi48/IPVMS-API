@@ -54,7 +54,8 @@ export const uploadTemplateService = async (
   description,
   categoryId,
   htmlData,
-  htmlJson,
+  mode,
+  htmljson,
   userid
 ) => {
   try {
@@ -63,7 +64,8 @@ export const uploadTemplateService = async (
       description,
       categoryId,
       htmlData,
-      htmlJson,
+      htmljson,
+      mode,
       userid,
     });
 
