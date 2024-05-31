@@ -72,7 +72,8 @@ export const getFile = async (req, res) => {
       d.htmljson, 
       convert_from(d.htmldata, 'utf8') AS data,
       d.category_id,
-      c.category 
+      c.category,
+      d.is_active 
   FROM 
       document d
   JOIN 
@@ -452,7 +453,9 @@ export const getRecentPolicies = async (req, res) => {
     d.created_at,
 	u.first_name
   FROM document d
+
   JOIN user_table u ON d.created_by =u.id
+  where d.is_active = TRUE
   ORDER BY d.created_at DESC
   LIMIT 5;
 `;
