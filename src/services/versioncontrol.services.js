@@ -25,3 +25,34 @@ export const VersionfileuploadService = async (
   //     [htmlText, docId]
   //   );
 };
+
+export const TemplateVersionfileuploadService = async (
+  version_number,
+  doc_id,
+  delta,
+  created_by
+) => {
+  console.log("in serviuce", version_number, doc_id);
+  const query = `
+      INSERT INTO template_version(version_number, doc_id, delta, created_by)
+      VALUES($1, $2, $3, $4)
+      RETURNING *;
+    `;
+  const values = [
+    parseFloat(version_number),
+    parseInt(doc_id),
+    delta,
+    created_by,
+  ];
+  try {
+    const result = await pool.query(query, values);
+    console.log(result);
+  } catch (error) {
+    console.log(error.message, "rg");
+    throw new DatabaseError("cant set version ");
+  }
+  //   const document = await pool.query(
+  //     "UPDATE document SET htmldata=$1 WHERE id=$2 RETURNING *",
+  //     [htmlText, docId]
+  //   );
+};

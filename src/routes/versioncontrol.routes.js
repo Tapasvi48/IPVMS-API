@@ -14,7 +14,10 @@ import {
   checkIdMiddleware,
   createVersionMiddleware,
 } from "../middleware/fileHandlingMiddleware.js";
-import { getVersions } from "../controllers/versioncontrol/document.controller.js";
+import {
+  getVersions,
+  getVersionsTemplate,
+} from "../controllers/versioncontrol/document.controller.js";
 
 const versionControlRouter = express.Router();
 
@@ -46,5 +49,6 @@ versionControlRouter.get(
   getTemplateVersionById
 );
 versionControlRouter.get("/getVersions", getVersions);
+versionControlRouter.get("/getVersionsTemplate", getVersionsTemplate);
 
 export default versionControlRouter;

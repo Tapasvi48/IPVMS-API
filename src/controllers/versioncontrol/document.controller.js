@@ -49,3 +49,33 @@ export const getVersions = async (req, res) => {
     });
   }
 };
+
+export const getVersionsTemplate = async (req, res) => {
+  try {
+    const docId = parseInt(req.query.docId);
+    console.log(docId);
+    const documents = await pool.query(
+      "SELECT * FROM template_version WHERE doc_id=$1",
+      [docId]
+    );
+    console.log(documents);
+    const result = documents.rows;
+
+    if (documents.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No version Found",
+      });
+    }
+    return res.status(200).json({
+      status: "success",
+      data: result,
+      message: "User Info",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: error.message,
+      message: "Internal Server Error",
+    });
+  }
+};
