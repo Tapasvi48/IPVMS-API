@@ -91,16 +91,9 @@ export const loginUserService = async (body) => {
     if (!validPassword) {
       throw new ValidationError("invalid credentials");
     }
-
     const token = jwt.sign({ id: user.rows[0].id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRY_TIME,
     });
-    // console.log("oooooooooooooooooooooo", user.rows[0].first_name);
-    if (user.rows[0].first_name === '' || user.rows[0].first_name === null) {
-      // console.log('oooooooooooooooooooooooooooooooooooooooooooooooooo');
-      throw new AccountSetupError("User account is not setup", token);
-    }
-
     const users = user.rows[0];
     delete users["password"];
     return { users, token };
@@ -197,7 +190,6 @@ export const sendInvite = async (body) => {
     if (user.rows.length > 0) {
       throw new ConflictError("User email already Exist");
     } else {
-
       const password = generatePassword();
       const hashedPassword = await generateHashPassword(password);
       const isActive = true;
