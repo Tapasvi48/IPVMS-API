@@ -71,9 +71,11 @@ export const getPaginatedDocumentDetailsWithSearch = async (
           category_id as cid,
           created_at, 
           created_by, 
-          title
+          title,
+          is_active
       FROM document d
       WHERE 
+      d.is_active = TRUE and
       title ILIKE '%'||$3||'%'
       ORDER BY ${orderByColumn} ${orderByDirection}
   ),
