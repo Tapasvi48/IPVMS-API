@@ -19,6 +19,8 @@ export const uploadLetter = async (req, res, next) => {
     console.log("userrrr id is", userId);
     const email = req.body.email;
     const actor_id = req.body.ipvms_userId;
+    const recipient_name = req.body.recipient_name;
+    const recipient_email = req.body.recipient_email;
     console.log(email);
     var result;
 
@@ -44,8 +46,16 @@ export const uploadLetter = async (req, res, next) => {
       const htmlData1 = Buffer.from(html_data, "utf8");
       if (typeof letter_id !== "undefined") {
         result = await pool.query(
-          "INSERT INTO letters (template_id,userid,html_data,status,filepath) VALUES($1,$2,$3,$4,$5) RETURNING *",
-          [templateId, userId, htmlData1, "PENDING", filename]
+          "INSERT INTO letters (template_id,userid,html_data,status,filepath,recipient_email,recipient_name) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *",
+          [
+            templateId,
+            userId,
+            htmlData1,
+            "PENDING",
+            filename,
+            recipient_email,
+            recipient_name,
+          ]
         );
       } else {
         result = await pool.query(
