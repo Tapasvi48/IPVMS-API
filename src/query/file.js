@@ -39,7 +39,7 @@ export const uploadTemplate = async (data) => {
       "INSERT INTO  template   (htmldata,title,htmljson,created_by,mode) VALUES($1,$2,$3,$4,$5) RETURNING *",
       [htmlData, name, htmljson, userid, mode]
     );
-    return result;
+    return result.rows;
   } catch (error) {
     throw new Error("Error" + error.message);
   }
