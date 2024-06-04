@@ -107,11 +107,62 @@ app.get("/getversions/datewise", async (req, res) => {
   }
 });
 
+app.get("/letters/getversions/datewise", async (req, res) => {
+  const docId = parseInt(req.query.docId);
+  try {
+    const result = await pool.query(
+      `SELECT 
+      datew,
+      STRING_AGG(grouped_value, ', ') AS grouped_values
+  FROM (
+      SELECT 
+          dv.created_at,
+          DATE(dv.created_at) as datew,
+          '[' || dv.id::text || ',' || dv.version_number || ',' || dv.doc_id ||  ',' || dv.created_at || ',' || u.first_name || ']' AS grouped_value
+      FROM 
+          template_version dv
+      JOIN 
+          user_table u ON dv.created_by = u.id
+      WHERE 
+          dv.doc_id = $1
+      ORDER BY 
+          dv.created_at DESC
+  ) subquery
+  GROUP BY 
+      datew
+  ORDER BY 
+      datew DESC;
+  
+  `,
+      [docId]
+    );
+    const count = result.rows;
+    res.json(count);
+  } catch (error) {
+    console.error("Error executing query", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 app.get("/getVersionbyID", async (req, res) => {
   const docId = parseInt(req.query.id);
   try {
     const result = await pool.query(
       `SELECT * from document_version where id=$1;`,
+      [docId]
+    );
+    const count = result.rows;
+    res.json(count);
+  } catch (error) {
+    console.error("Error executing query", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+app.get("/getVersionbyIDTemplate", async (req, res) => {
+  const docId = parseInt(req.query.id);
+  try {
+    const result = await pool.query(
+      `SELECT * from template_version where id=$1;`,
       [docId]
     );
     const count = result.rows;
@@ -378,6 +429,30 @@ app.post("/api/updatePolicyHtmlData", async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Policy Request Approved",
+    });
+  } catch (error) {
+    console.log(error.message, "rg");
+    throw new DatabaseError("cant set to_approve field");
+  }
+});
+app.post("/api/updateTemplateHtmlData", async (req, res) => {
+  const { id, htmldata, htmlJson } = req.body;
+  console.log(id);
+  const query = `
+  UPDATE template SET htmldata=$1, htmljson=$2  WHERE id=$3 RETURNING *
+`;
+  const values = [htmldata, htmlJson, parseInt(id)];
+  const query2 = `
+  DELETE FROM template_version WHERE doc_id=$1;
+`;
+  const values2 = [parseInt(id)];
+  try {
+    const result = await pool.query(query, values);
+    const result2 = await pool.query(query2, values2);
+    console.log(result);
+    return res.status(201).json({
+      success: true,
+      message: "Template Request Approved",
     });
   } catch (error) {
     console.log(error.message, "rg");

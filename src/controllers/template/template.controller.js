@@ -1,17 +1,22 @@
-import { VersionfileuploadService } from "../../services/versioncontrol.services.js";
+import {
+  TemplateVersionfileuploadService,
+  VersionfileuploadService,
+} from "../../services/versioncontrol.services.js";
 
 export const createTemplateVersion = async (req, res, next) => {
   try {
     // middleware apply user
-    // const { version_number, doc_id, delta }
-    const body = req.body;
-    const result = await VersionfileuploadService(body);
+    const { version_number, doc_id, delta, created_by } = req.body;
+    const result = await TemplateVersionfileuploadService(
+      version_number,
+      doc_id,
+      delta,
+      created_by
+    );
 
     return res.status(201).json({
       success: true,
       message: "Document version created:",
-      length: result.length,
-      data: result.rows,
     });
   } catch (error) {
     next(error);
