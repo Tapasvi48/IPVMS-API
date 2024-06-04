@@ -16,6 +16,7 @@ export const uploadLetter = async (req, res, next) => {
     const filename = req.file.originalname;
     const templateId = req.body.templateId;
     const userId = req.body.userId;
+    console.log("userrrr id is", userId);
     const email = req.body.email;
     const actor_id = req.body.ipvms_userId;
     console.log(email);

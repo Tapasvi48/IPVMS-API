@@ -78,6 +78,7 @@ export const uploadTemplateService = async (
     return res.status(200).json({
       success: true,
       message: "Template uploaded",
+      document: result,
     });
   } catch (error) {
     return res.status(400).json({ message: error.message, success: false });
