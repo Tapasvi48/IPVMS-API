@@ -7,6 +7,7 @@ import {
   getDocumentById,
   getPaginatedDocumentDetailsWithSearch,
   getPaginatedDocumentDetailsWithSearchForDraft,
+  getLetterByUserIdQuery,
 } from "../query/file.js";
 import { getPagination } from "../utils/getPagination.js";
 
@@ -162,6 +163,14 @@ export const getPaginatedDocumentDetailsWithSearchService = async (req) => {
     } else {
       throw new NotFoundError("No documents found.");
     }
+  } catch (error) {
+    throw error;
+  }
+};
+export const getLetterByIdService = async (userId) => {
+  try {
+    const result = await getLetterByUserIdQuery(userId);
+    return result;
   } catch (error) {
     throw error;
   }

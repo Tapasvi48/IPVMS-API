@@ -4,7 +4,7 @@ import * as fileService from "../../services/file.services.js";
 import path from "path";
 import { sendLetterEmail } from "../../core/Email/sendEmail.js";
 import { getPagination } from "../../utils/getPagination.js";
-import { NotFoundError } from "../../Error/customError.js";
+import { NotFoundError, ValidationError } from "../../Error/customError.js";
 // import { pool2 } from "../../core/database/db2.js";
 import { DatabaseError } from "../../Error/customError.js";
 import { minioClient } from "../../utils/minioSetup.js";
@@ -738,6 +738,20 @@ export const uploadLetterMinio = async (req, res, next) => {
     return res
       .status(200)
       .json({ message: "documents are", success: true, url: url });
+  } catch (error) {
+    next(error);
+  }
+};
+export const getLetterByUserId = async (req, res, next) => {
+  const userId = req.params.userId;
+  if (!userId) {
+    return new ValidationError("user id is null");
+  }
+  try {
+    const result = await fileService.getLetterByIdService();
+    return res
+      .status(200)
+      .json({ message: "All Letter send to user are", letter: result.rows });
   } catch (error) {
     next(error);
   }
