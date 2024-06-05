@@ -748,7 +748,7 @@ export const getLetterByUserId = async (req, res, next) => {
     return new ValidationError("user id is null");
   }
   try {
-    const result = await fileService.getLetterByIdService();
+    const result = await fileService.getLetterByIdService(userId);
     return res
       .status(200)
       .json({ message: "All Letter send to user are", letter: result.rows });

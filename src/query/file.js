@@ -179,8 +179,9 @@ export const getPaginatedDocumentDetailsWithSearchForDraft = async (
 };
 export const getLetterByUserIdQuery = async (userId) => {
   try {
+    console.log(userId, "user id us");
     const result = await pool.query(
-      `SELECT  l.id,t.title,TO_CHAR(l.created_at, 'FMMonth FMDD, YYYY')  AS created_at FROM letters l  INNER JOIN template t on t.id=l.template_id WHERE l.status='PENDING' or l.status='SIGNED' AND userid=$1`,
+      `SELECT  l.id,t.title,TO_CHAR(l.created_at, 'FMMonth FMDD, YYYY')  AS created_at FROM letters l  INNER JOIN template t on t.id=l.template_id WHERE userid=$1 and status!='DRAFT'   `,
       [userId]
     );
     return result;
