@@ -59,7 +59,7 @@ SELECT
     NULL,'Total',NULL,NULL,
     COUNT(*) AS total_documents
 FROM 
-    document
+    document where document.is_active =TRUE
     
     Order BY total_documents DESC;`
     );
