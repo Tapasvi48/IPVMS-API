@@ -17,6 +17,7 @@ import {
   getLetterById,
   uploadSignSwiftLetter,
   uploadLetterMinio,
+  getLetterByUserId,
 } from "../controllers/file/File.controller.js";
 
 import {
@@ -72,5 +73,6 @@ fileRouter.post("/upload/letterpdf", upload.single("file"), uploadLetterMinio);
 fileRouter.post("/upload/updateLetterStatus", updateLetterStatus);
 fileRouter.get("/letter/:id", getAllLetters);
 fileRouter.delete("/deleteLetter/:id", deleteLetter);
+fileRouter.get("/getSendletter/:userId", getLetterByUserId);
 
 export default fileRouter;

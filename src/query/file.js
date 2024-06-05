@@ -175,3 +175,15 @@ export const getPaginatedDocumentDetailsWithSearchForDraft = async (
     throw new DatabaseError("Error while getting documents details.");
   }
 };
+export const getLetterByUserIdQuery = async (userId) => {
+  try {
+    const result = await pool.query(
+      `SELECT  l.id,t.title,TO_CHAR(l.created_at, 'FMMonth FMDD, YYYY')  AS created_at FROM letters l  INNER JOIN template t on t.id=l.template_id WHERE l.status='PENDING' or l.status='SIGNED' AND userid=$1`,
+      [userId]
+    );
+    return result;
+  } catch (error) {
+    console.log(error.message);
+    throw new DatabaseError("Error in fetching letter");
+  }
+};
