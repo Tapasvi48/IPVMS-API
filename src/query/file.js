@@ -181,7 +181,15 @@ export const getLetterByUserIdQuery = async (userId) => {
   try {
     console.log(userId, "user id us");
     const result = await pool.query(
-      `SELECT  l.id,t.title,TO_CHAR(l.created_at, 'FMMonth FMDD, YYYY')  AS created_at FROM letters l  INNER JOIN template t on t.id=l.template_id WHERE userid=$1 and status!='DRAFT'   `,
+      `SELECT l.id, 
+      t.title, 
+      TO_CHAR(l.created_at, 'FMMonth FMDD, YYYY') AS created_at 
+FROM letters l 
+INNER JOIN template t 
+       ON t.id = l.template_id 
+WHERE userid = $1 
+ AND status != 'DRAFT' 
+ORDER BY l.created_at DESC`,
       [userId]
     );
     return result;
