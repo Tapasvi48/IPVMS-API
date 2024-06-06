@@ -79,7 +79,7 @@ export const sendInvitationEmail = async (email, password) => {
     const htmlTemp = invitationTemplate(email, password, action_url);
     const mail = await transporter.sendMail({
       from: process.env.SMTP_USER,
-      to: "tarora@ex2india.com",
+      to: email,
       subject: "Invitation to platform",
       html: htmlTemp,
     });
