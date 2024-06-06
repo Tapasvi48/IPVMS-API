@@ -187,14 +187,16 @@ export const updateLetterStatus = async (req, res, next) => {
     const email = req.body.email;
     const fileName = req.body.fileName;
     const swift_id = req.body.swift_id;
+    const shareLink = req.body.ShareLink;
+    console.log("fileName is", fileName);
     if (typeof letter_id !== "undefined") {
       const result = pool.query(
-        "UPDATE TABLE letters SET html_data=$1,status=$3,swift_id=$4 WHERE id=$2",
-        [htmlData1, letter_id, "PENDING", swift_id]
+        "UPDATE  letters SET html_data=$1,status=$3,swift_id=$4,filepath=$5 WHERE id=$2",
+        [htmlData1, letter_id, "PENDING", swift_id, fileName]
       );
     } else {
       const result = pool.query(
-        "INSERT INTO  letters (html_data,status,created_by,userid,template_id,recipient_name,recipient_email,swift_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8)",
+        "INSERT INTO  letters (html_data,status,created_by,userid,template_id,recipient_name,recipient_email,swift_id,filepath) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)",
         [
           htmlData1,
           "PENDING",
@@ -204,6 +206,7 @@ export const updateLetterStatus = async (req, res, next) => {
           name,
           email,
           swift_id,
+          fileName,
         ]
       );
     }
