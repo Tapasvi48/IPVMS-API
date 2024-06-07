@@ -3,7 +3,11 @@ import { template } from "./Template/template.js";
 import path from "path";
 import dotenv from "dotenv";
 import { letterTemplate } from "./Template/letterTemplate.js";
-import { BadGatewayError, DatabaseError } from "../../Error/customError.js";
+import {
+  BadGatewayError,
+  DatabaseError,
+  ValidationError,
+} from "../../Error/customError.js";
 import { invitationTemplate } from "./Template/invitationTemplate.js";
 const __dirname = path.resolve();
 dotenv.config({ path: path.resolve(__dirname, "./.env") });
@@ -63,7 +67,7 @@ export const sendLetterEmail = async (pdfFile, email) => {
     });
   } catch (error) {
     console.log(error, "email not sent");
-    throw error;
+    throw new ValidationError(error.message);
   }
 };
 export const sendInvitationEmail = async (email, password) => {
