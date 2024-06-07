@@ -81,10 +81,8 @@ export const uploadLetter = async (req, res, next) => {
       throw new DatabaseError("some error in saving letter in db");
     }
     try {
-      if (result) {
-        console.log("Sending email", email);
-        await sendLetterEmail(req.file, email);
-      }
+      console.log("Sending email", email);
+      await sendLetterEmail(req.file, email);
     } catch (error) {
       throw error;
     }
