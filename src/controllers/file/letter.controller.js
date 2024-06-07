@@ -21,7 +21,7 @@ export const uploadLetter = async (req, res, next) => {
     const actor_id = req.body.ipvms_userId;
     const recipient_name = req.body.recipient_name;
     const recipient_email = req.body.recipient_email;
-    console.log(email);
+
     var result;
 
     try {
@@ -42,9 +42,13 @@ export const uploadLetter = async (req, res, next) => {
 
     try {
       const html_data = req.body.html_data;
-      const letter_id = req.body.letter_id;
+      const letter_id = req.body.letter_id || -1;
+      console.log(email);
+      console.log("letter id is", letter_id);
       const htmlData1 = Buffer.from(html_data, "utf8");
-      if (typeof letter_id !== "undefined") {
+      console.log(typeof letter_id, "tyoe is letter id");
+      if (letter_id === -1) {
+        console.log("letter id not call");
         result = await pool.query(
           "INSERT INTO letters (template_id,userid,html_data,status,filepath,recipient_email,recipient_name,created_by) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *",
           [
@@ -59,8 +63,9 @@ export const uploadLetter = async (req, res, next) => {
           ]
         );
       } else {
+        console.log("letter id is", letter_id);
         result = await pool.query(
-          "UPDATE TABLE letters SET status=$1,filepath=$2  WHERE id=$3 RETURNING *",
+          "UPDATE  letters SET status=$1,filepath=$2  WHERE id=$3 RETURNING *",
           ["PENDING", filename, letter_id]
         );
       }
@@ -159,6 +164,7 @@ export const saveLetter = async (req, res, next) => {
     } = req.body;
 
     const htmlData1 = Buffer.from(html_data, "utf8");
+    console.log(html_data, "html data is");
     if (!letter_id) {
       const result = pool.query(
         "INSERT INTO letters (template_id,userid,html_data,created_by,recipient_name,recipient_email) VALUES($1,$2,$3,$4,$5,$6)",
