@@ -37,6 +37,7 @@ export const sendEmail = async (email, token) => {
 };
 
 export const sendLetterEmail = async (pdfFile, email) => {
+  console.log("pdf file and email are", pdfFile, email);
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
@@ -47,7 +48,7 @@ export const sendLetterEmail = async (pdfFile, email) => {
         pass: process.env.SMTP_PASS,
       },
     });
-    const htmlTemp = letterTemplate();
+
     await transporter.sendMail({
       from: process.env.SMTP_USER,
       to: email,
