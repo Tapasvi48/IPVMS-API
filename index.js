@@ -101,6 +101,7 @@ app.get("/getversions/datewise", async (req, res) => {
     );
     const count = result.rows;
     res.json(count);
+    console.log(count);
   } catch (error) {
     console.error("Error executing query", error);
     res.status(500).json({ error: "Internal server error" });
