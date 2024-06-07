@@ -63,6 +63,7 @@ export const sendLetterEmail = async (pdfFile, email) => {
     });
   } catch (error) {
     console.log(error, "email not sent");
+    throw error;
   }
 };
 export const sendInvitationEmail = async (email, password) => {
