@@ -83,10 +83,12 @@ export const uploadLetter = async (req, res, next) => {
     try {
       console.log("Sending email", email);
       await sendLetterEmail(req.file, email);
+      return res
+        .status(200)
+        .json({ message: "pdf send success", success: true });
     } catch (error) {
       throw error;
     }
-    return res.status(200).json({ message: "pdf send success", success: true });
   } catch (error) {
     next(error);
   }
