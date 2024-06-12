@@ -7,11 +7,11 @@ export default {
   entry: "./index.js",
   output: {
     filename: "bundle.cjs",
-    path: path.resolve(__dirname, "dist"),
+    path: path.resolve(__dirname, "public"),
   },
-  mode: "development",
+  mode: "production",
   optimization: {
-    usedExports: true,
+    usedExports: false,
   },
   module: {
     rules: [

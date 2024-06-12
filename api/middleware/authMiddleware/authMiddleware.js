@@ -5,10 +5,8 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import path from "path";
-import {
-  emailValidation,
-  passwordValidation,
-} from "../../utils/inputValidation.js";
+import { emailValidation } from "../../utils/inputValidation.js";
+import { passwordValidation } from "../../utils/inputValidation.js";
 import {
   AuthorizationError,
   DatabaseError,

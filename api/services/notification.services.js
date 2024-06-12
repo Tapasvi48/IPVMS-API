@@ -18,6 +18,9 @@ RETURNING *`;
       notifier_id,
       status,
     ]);
+    const notification_id = values.rows[0].id;
+    const query2 = `INSERT INTO notification_status (user_id,notification_id) VALUES($1,$2)`;
+    const value2 = await pool.query(query2, [notifier_id, notification_id]);
   } catch (error) {
     throw new DatabaseError("error in creating notification");
   }
@@ -110,14 +113,16 @@ JOIN
     notification_change nc ON n.notification_object_id = nc.notification_object_id
 JOIN
     user_table u ON nc.actor_id = u.id
+JOIN 
+    notification_status  ns ON ns.notification_id=n.id    
 LEFT JOIN
     letters l ON no.entity_id = l.id AND no.entity_group = 'LETTER'
 LEFT JOIN
     document p ON no.entity_id = p.id AND no.entity_group = 'POLICY'
 WHERE 
-    (n.notifier_id = $1 OR n.broadcast = true)
+    (n.notifier_id = $1 AND ns.read_status=false)
     OR
-    (n.broadcast = true AND n.broadcast_id=$2)
+    (n.broadcast=true AND n.broadcast_id=$2)
 ORDER BY 
     n.id DESC;
   `;
@@ -151,6 +156,7 @@ export const add_notification = async (
     if (group_id !== null) {
       // Broadcast notification
       await createBroadCastNotification(notificationObjectId, group_id, 1);
+      // create status for user
     } else {
       // Direct notification
       await createNotification(notificationObjectId, notifier_id, 1);

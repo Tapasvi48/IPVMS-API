@@ -1,7 +1,7 @@
 import { pool } from "../../core/database/db.js";
 import dotenv from "dotenv";
 import path from "path";
-import * as userService from "../../services/user.Services.js";
+import * as userService from "../../services/user.services.js";
 import {
   AccountSetupError,
   AuthorizationError,
@@ -9,7 +9,7 @@ import {
   NotFoundError,
   ValidationError,
 } from "../../Error/customError.js";
-import { emailValidation } from "../../utils/inputValidation.js";
+// import { emailValidation } from "../../utils/inputValidation.js";
 
 const __dirname = path.resolve();
 dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
