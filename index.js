@@ -3,28 +3,28 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import path, { parse } from "path";
-import userRouter from "./src/routes/user.routes.js";
+import userRouter from "./api/routes/user.routes.js";
 import compression from "compression";
-import fileRouter from "./src/routes/file.routes.js";
+import fileRouter from "./api/routes/file.routes.js";
 import rateLimit from "express-rate-limit";
 import swaggerUi from "swagger-ui-express";
 import { apiDocumentation } from "./docs/apidoc.js";
 
-import categoryRouter from "./src/routes/catogery.routes.js";
+import categoryRouter from "./api/routes/catogery.routes.js";
 
-import searchRouter from "./src/routes/globalsearch.routes.js";
-import versionControlRouter from "./src/routes/versioncontrol.routes.js";
-import { exceptionHandler } from "./src/middleware/errorHandlingMiddleware.js";
-import { pool } from "./src/core/database/db.js";
-import { DatabaseError } from "./src/Error/customError.js";
-import hookRouter from "./src/routes/webhook.routes.js";
-import { add_notification } from "./src/services/notification.services.js";
+import searchRouter from "./api/routes/globalsearch.routes.js";
+import versionControlRouter from "./api/routes/versioncontrol.routes.js";
+import { exceptionHandler } from "./api/middleware/errorHandlingMiddleware.js";
+import { pool } from "./api/core/database/db.js";
+import { DatabaseError } from "./api/Error/customError.js";
+import hookRouter from "./api/routes/webhook.routes.js";
+import { add_notification } from "./api/services/notification.services.js";
 import {
   Entity_Group,
   RoleGroupIdMapping,
-} from "./src/constants/notificationsConstants.js";
-import { entityTypeIdMapping } from "./src/utils/notification.config.js";
-import notificationRouter from "./src/routes/notifications.routes.js";
+} from "./api/constants/notificationsConstants.js";
+import { entityTypeIdMapping } from "./api/utils/notification.config.js";
+import notificationRouter from "./api/routes/notifications.routes.js";
 
 const __dirname = path.resolve();
 
@@ -478,3 +478,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("server statrted at " + PORT);
 });
+export default app;

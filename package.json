@@ -8,7 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon index.js",
     "build": "webpack --config webpack.config.js",
-    "prod": "node dist/bundle.cjs"
+    "prod": "node index.js"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +21,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.18.3",
     "express-rate-limit": "^7.2.0",
+    "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "minio": "^8.0.0",
     "module_name": "^1.0.0",
