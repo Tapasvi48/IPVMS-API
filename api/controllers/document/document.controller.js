@@ -9,9 +9,8 @@ dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 export const createDocumentVersion = async (req, res, next) => {
   try {
     // middleware apply user
-    const { version_number, doc_id, delta, created_by } = req.body;
+    const { doc_id, delta, created_by } = req.body;
     const result = await VersionfileuploadService(
-      version_number,
       doc_id,
       delta,
       created_by

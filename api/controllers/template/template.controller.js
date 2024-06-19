@@ -6,9 +6,8 @@ import {
 export const createTemplateVersion = async (req, res, next) => {
   try {
     // middleware apply user
-    const { version_number, doc_id, delta, created_by } = req.body;
+    const { doc_id, delta, created_by } = req.body;
     const result = await TemplateVersionfileuploadService(
-      version_number,
       doc_id,
       delta,
       created_by

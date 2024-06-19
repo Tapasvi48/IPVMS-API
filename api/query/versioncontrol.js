@@ -10,16 +10,16 @@ import {
 
 
 export const documentVersionUpload = async (data) => {
-    const { version_number, doc_id, delta, created_by } = data;
+    const { doc_id, delta, created_by } = data;
 
     try {
         const query = {
             text: `
-            INSERT INTO document_version(version_number, doc_id, delta, created_by)
-            VALUES($1, $2, $3, $4)
+            INSERT INTO document_version( doc_id, delta, created_by)
+            VALUES($1, $2, $3)
             RETURNING *;
             `,
-            values: [version_number, doc_id, delta, created_by]
+            values: [doc_id, delta, created_by]
         };
         const dbResponse = await pool.query(query);
         return dbResponse;
@@ -39,7 +39,7 @@ export const getDocumentVersionsDatewise = async (data) => {
         const query = {
             text: `
             SELECT DATE(dv.created_at) AS date,
-            STRING_AGG('[' || dv.id::text || ',' || dv.version_number || ',' || dv.doc_id ||  ','|| dv.created_at || ','|| u.first_name || ']', ', ') AS grouped_values
+            STRING_AGG('[' || dv.id::text || ',' || dv.doc_id ||  ','|| dv.created_at || ','|| u.first_name || ']', ', ') AS grouped_values
             FROM document_version dv
             JOIN user_table u ON dv.created_by = u.id
             WHERE dv.doc_id = ($1)
@@ -86,16 +86,16 @@ export const getDocumentVersionsById = async (data) => {
 
 
 export const templateVersionUpload = async (data) => {
-    const { version_number, doc_id, delta, created_by } = data;
+    const { doc_id, delta, created_by } = data;
 
     try {
         const query = {
             text: `
-            INSERT INTO template_version(version_number, doc_id, delta, created_by)
-            VALUES($1, $2, $3, $4)
+            INSERT INTO template_version(doc_id, delta, created_by)
+            VALUES($1, $2, $3)
             RETURNING *;
             `,
-            values: [version_number, doc_id, delta, created_by]
+            values: [doc_id, delta, created_by]
         };
         const dbResponse = await pool.query(query);
         return dbResponse;
@@ -115,7 +115,7 @@ export const getTemplateVersionsDatewise = async (data) => {
         const query = {
             text: `
             SELECT DATE(tv.created_at) AS date,
-            STRING_AGG('[' || tv.id::text || ',' || tv.version_number || ',' || tv.doc_id ||  ','|| tv.created_at || ','|| u.first_name || ']', ', ') AS grouped_values
+            STRING_AGG('[' || tv.id::text || ','|| tv.doc_id ||  ','|| tv.created_at || ','|| u.first_name || ']', ', ') AS grouped_values
             FROM template_version tv
             JOIN user_table u ON tv.created_by = u.id
             WHERE tv.doc_id = ($1)

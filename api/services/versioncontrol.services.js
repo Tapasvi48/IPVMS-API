@@ -1,18 +1,16 @@
 import { pool } from "../core/database/db.js";
 import { DatabaseError, ValidationError } from "../Error/customError.js";
 export const VersionfileuploadService = async (
-  version_number,
   doc_id,
   delta,
   created_by
 ) => {
-  // console.log("in serviuce", version_number, doc_id, delta);
   const query = `
-      INSERT INTO document_version(version_number, doc_id, delta, created_by)
-      VALUES($1, $2, $3, $4)
+      INSERT INTO document_version(doc_id, delta, created_by)
+      VALUES($1, $2, $3)
       RETURNING *;
     `;
-  const values = [version_number, parseInt(doc_id), delta, created_by];
+  const values = [parseInt(doc_id), delta, created_by];
   try {
     const result = await pool.query(query, values);
     console.log(result);
@@ -27,19 +25,17 @@ export const VersionfileuploadService = async (
 };
 
 export const TemplateVersionfileuploadService = async (
-  version_number,
   doc_id,
   delta,
   created_by
 ) => {
-  console.log("in serviuce", version_number, doc_id);
+  // console.log("in serviuce", doc_id);
   const query = `
-      INSERT INTO template_version(version_number, doc_id, delta, created_by)
-      VALUES($1, $2, $3, $4)
+      INSERT INTO template_version(doc_id, delta, created_by)
+      VALUES($1, $2, $3)
       RETURNING *;
     `;
   const values = [
-    parseFloat(version_number),
     parseInt(doc_id),
     delta,
     created_by,

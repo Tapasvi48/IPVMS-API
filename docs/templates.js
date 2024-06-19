@@ -44,10 +44,6 @@ const createTemplateVersion = {
                                         type: "number",
                                         example: "980765",
                                     },
-                                    version_number: {
-                                        type: "number",
-                                        example: "1.3",
-                                    },
                                     doc_id: {
                                         type: "number",
                                         example: '4'
@@ -84,7 +80,7 @@ const createTemplateVersion = {
                             },
                             message: {
                                 type: "string",
-                                example: "version_number or doc_id or delta are missing",
+                                example: "doc_id or delta are missing",
                             },
                         },
                     },
@@ -117,10 +113,6 @@ const createTemplateVersion = {
 const createTemplateVersionBody = {
     type: "object",
     properties: {
-        version_number: {
-            type: "string",
-            example: '2.2'
-        },
         doc_id: {
             type: "string",
             example: "2"
@@ -287,10 +279,6 @@ const getTemplateVersionById = {
                                     id: {
                                         type: "number",
                                         example: 1
-                                    },
-                                    version_number: {
-                                        type: "number",
-                                        example: '2.2'
                                     },
                                     doc_id: {
                                         type: "string",

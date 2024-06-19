@@ -53,18 +53,18 @@ export const uploadTemplateMiddleware = async (req, res, next) => {
 };
 
 export const createVersionMiddleware = async (req, res, next) => {
-  const { version_number, doc_id, delta, created_by } = req.body;
+  const { doc_id, delta, created_by } = req.body;
 
-  if (!version_number || version_number === "") {
-    next(new ValidationError("version_number or doc_id or delta are missing"));
-  }
+  // if (!version_number || version_number === "") {
+  //   next(new ValidationError("version_number or doc_id or delta are missing"));
+  // }
 
   if (!doc_id || doc_id === "") {
-    next(new ValidationError("version_number or doc_id or delta are missing"));
+    next(new ValidationError("doc_id or delta are missing"));
   }
 
   if (!delta || delta === "" || Object.keys(delta).length === 0) {
-    next(new ValidationError("version_number or doc_id or delta are missing"));
+    next(new ValidationError("doc_id or delta are missing"));
   }
 
   next();

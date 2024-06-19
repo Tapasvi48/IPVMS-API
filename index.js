@@ -81,7 +81,7 @@ app.get("/getversions/datewise", async (req, res) => {
       SELECT 
           dv.created_at,
           DATE(dv.created_at) as datew,
-          '[' || dv.id::text || ',' || dv.version_number || ',' || dv.doc_id ||  ',' || dv.created_at || ',' || u.first_name || ']' AS grouped_value
+          '[' || dv.id::text || ',' || dv.doc_id ||  ',' || dv.created_at || ',' || u.first_name || ']' AS grouped_value
       FROM 
           document_version dv
       JOIN 
@@ -119,7 +119,7 @@ app.get("/letters/getversions/datewise", async (req, res) => {
       SELECT 
           dv.created_at,
           DATE(dv.created_at) as datew,
-          '[' || dv.id::text || ',' || dv.version_number || ',' || dv.doc_id ||  ',' || dv.created_at || ',' || u.first_name || ']' AS grouped_value
+          '[' || dv.id::text || ',' || dv.doc_id ||  ',' || dv.created_at || ',' || u.first_name || ']' AS grouped_value
       FROM 
           template_version dv
       JOIN 
