@@ -638,16 +638,13 @@ export const getLetters = async (req, res, next) => {
     )
     SELECT 
       pd.*, 
-      t.title AS template_name, CONCAT(ut.first_name, ' ', ut.last_name) as created_by_name, c.category
+      t.title AS template_name, CONCAT(ut.first_name, ' ', ut.last_name) as created_by_name
     FROM 
       paginated_data pd
 	JOIN user_table ut
 	on pd.created_by= ut.id
     JOIN template t
       ON pd.tid = t.id
-
-    JOIN category c 
-      ON t.category_id = c.id
     ORDER BY created_at DESC
     LIMIT $2 OFFSET $3;
     
